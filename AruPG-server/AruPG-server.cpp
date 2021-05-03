@@ -3,8 +3,13 @@
 
 #include "lib.h"
 
-int main()
+#pragma comment(lib,"Ws2_32.lib")
+
+int main(int argc, char* argv[])
 {
+    // Application params
+    std::string message;
+
     // Initializing WinSock
     WSADATA wsa;
     if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
@@ -12,29 +17,47 @@ int main()
         std::cout << "Failed. Error Code : " << WSAGetLastError();
         return 1;
     }
-    SOCKET ServerMain;
-    sockaddr_in socketInfo;
+    // For Server Instance
+    SOCKET ServerMain, ConnectionWithClient;
+    sockaddr_in socketInfo, socketClient;
+    const int clientSize = sizeof(sockaddr_in);
 
+    // List of Ports
     std::vector<uint16_t> PORTS;
     PORTS.push_back(5656);
     
+    // Instancing the server socket
     ServerMain = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
+    // Initializing the server params
     socketInfo.sin_addr.s_addr = INADDR_ANY;
     socketInfo.sin_family = AF_INET;
     socketInfo.sin_port = htons(PORTS[0]);
 
-    char ip[100] = "192.168.100.34";
+    //char ip[100] = "192.168.100.34";
     //socketInfo.sin_addr.s_addr = inet_addr(ip);
 
+    // Initializing the server bind
     if (bind(ServerMain, (sockaddr*)&socketInfo, sizeof(socketInfo)) == SOCKET_ERROR)
     {
         std::cout << "Bind failed with error code : " << WSAGetLastError();
     }
 
+    // Initializing listening
+    listen(ServerMain, SOMAXCONN);
 
+    // Server Main Loop
+    while ((ConnectionWithClient = accept(ServerMain, (sockaddr*)&socketClient, (int*)&clientSize)) != INVALID_SOCKET)
+    {
+        std::cout << "Hello World!\n";
+        message = "Hello Client , I have received your connection. But I have to go now, bye\n";
+        send(ConnectionWithClient, message.c_str(), message.size(), 0);
+    }
 
-    std::cout << "Hello World!\n";
+    closesocket(ServerMain);
+    WSACleanup();
+
+    return 0;
 }
 
 // Executar programa: Ctrl + F5 ou Menu Depurar > Iniciar Sem Depuração

@@ -3,9 +3,9 @@
 #include <cstdio>
 #include <cstdint>
 #include <Windows.h>
-#include <WinSock2.h>
+//#include <WinSock2.h>
 #include <conio.h>
-#include "./SDL2/include/SDL.h"
+//#include "./SDL2/include/SDL.h"
 
 typedef uint8_t byte;
 
