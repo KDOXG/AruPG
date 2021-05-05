@@ -1,13 +1,17 @@
 #include <iostream>
 #include <vector>
+#include <list>
+#include <string>
+#include <thread>
 #include <cstdio>
+#include <ctime>
 #include <cstdint>
 #include <Windows.h>
 //#include <WinSock2.h>
 #include <conio.h>
 //#include "./SDL2/include/SDL.h"
 
-typedef uint8_t byte;
+void player(uint16_t PORT);
 
 enum class PlayerStatus
 {
@@ -30,9 +34,9 @@ private:
     //graphics person;  /* para receber um sprite de personagem - SDL2 */
     char* name;
     std::string info;
-    byte lifes;
     uint16_t hp;    //HARII POTTAA
     uint16_t defense;
+    int64_t points;
     Abilities power[5];
     PlayerStatus status;
     void setInfo();
@@ -45,9 +49,19 @@ public:
     void start();
 };
 
+struct Elements
+{
+    std::list<Player> people;
+    std::list<Abilities> effect;
+};
+
 class Map
 {
 private:
     //graphics background;  /* para receber uma imagem de fundo - SDL2 */
-    
+    Elements area[100][100];
+public:
+    Map(/*graphics background*/);
+    int setMapEffect(int x, int y);
+    int getPlayers(int x, int y);
 };

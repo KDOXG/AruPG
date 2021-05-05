@@ -2,13 +2,16 @@
 //
 
 #include "lib.h"
-
 #pragma comment(lib,"Ws2_32.lib")
 
 int main(int argc, char* argv[])
 {
     // Application params
+
+
     std::string message;
+
+    std::thread player1, player2;
 
     // Initializing WinSock
     WSADATA wsa;
@@ -20,11 +23,13 @@ int main(int argc, char* argv[])
     // For Server Instance
     SOCKET ServerMain, ConnectionWithClient;
     sockaddr_in socketInfo, socketClient;
-    const int clientSize = sizeof(sockaddr_in);
+    int clientSize = sizeof(sockaddr_in);
 
     // List of Ports
     std::vector<uint16_t> PORTS;
     PORTS.push_back(5656);
+    PORTS.push_back(6000);
+    PORTS.push_back(7000);
     
     // Instancing the server socket
     ServerMain = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -43,22 +48,71 @@ int main(int argc, char* argv[])
         std::cout << "Bind failed with error code : " << WSAGetLastError();
     }
 
-    // Initializing listening
+    // Start listening
     listen(ServerMain, SOMAXCONN);
 
     // Server Main Loop
-    while ((ConnectionWithClient = accept(ServerMain, (sockaddr*)&socketClient, (int*)&clientSize)) != INVALID_SOCKET)
+    ConnectionWithClient = accept(ServerMain, (sockaddr*)&socketClient, &clientSize);
+    for (int count=1; count <= 2; count++)
     {
-        std::cout << "Hello World!\n";
-        message = "Hello Client , I have received your connection. But I have to go now, bye\n";
+        //ConnectionWithClient = accept(ServerMain, (sockaddr*)&socketClient, &clientSize);
+        std::cout << "Connection Accepted! " << 2-count << " player remains...\n";
+
+        message = std::to_string(PORTS[count]);
+        
         send(ConnectionWithClient, message.c_str(), message.size(), 0);
     }
 
     closesocket(ServerMain);
-    WSACleanup();
 
+
+
+    
+    WSACleanup();
+    
     return 0;
 }
+
+void player(uint16_t PORT)
+{
+    SOCKET server, connection;
+    sockaddr_in socketInfo, socketClient;
+    int clientSize = sizeof(sockaddr_in);
+
+    server = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    socketInfo.sin_addr.s_addr = INADDR_ANY;
+    socketInfo.sin_family = AF_INET;
+    socketInfo.sin_port = htons(PORT);
+
+    if (bind(server, (sockaddr*)&socketInfo, sizeof(socketInfo)) == SOCKET_ERROR)
+    {
+        std::cout << "Bind failed with error code : " << WSAGetLastError();
+        return;
+    }
+    listen(server, SOMAXCONN);
+
+    std::string enviar;
+    char* receber = (char*)malloc(128);
+
+    connection = accept(server, (sockaddr*)&socketClient, &clientSize);
+    for(clock_t clk = clock(); true; clk = clock())
+    {
+        enviar = "MAP";
+        send(connection, enviar.c_str(), enviar.size(), 0);
+
+
+        recv(connection, receber, 128, 0);
+
+        if (receber == 0 || !strcmp(receber, "QUIT"))
+            break;
+
+        while (((float)(clock() - clk)) / CLOCKS_PER_SEC < 0.5);
+    }
+
+    closesocket(server);
+    WSACleanup();
+}
+
 
 // Executar programa: Ctrl + F5 ou Menu Depurar > Iniciar Sem Depuração
 // Depurar programa: F5 ou menu Depurar > Iniciar Depuração

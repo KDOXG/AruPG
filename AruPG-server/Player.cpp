@@ -3,9 +3,9 @@
 Player::Player(char* name, uint16_t hp, uint16_t defense, char* names[5], int index, uint16_t damage[5])
 {
 	this->name = name;
-	this->lifes = 0;
 	this->hp = hp;
 	this->defense = defense;
+	this->points = 0;
 	for (int i = 0; i < 5; i++)
 		setPower(names[i], i, damage[i]);
 	this->status = PlayerStatus::PAUSE;
@@ -46,10 +46,10 @@ void Player::setInfo()
 	std::string temp;
 	temp = this->name;
 	this->info = "Nome: " + temp;
-	temp = this->lifes;
-	this->info += "\nVidas extras: " + temp;
-	temp = this->hp;
+	temp = std::to_string(this->hp);
 	this->info = "\nHP: " + temp;
+	temp = std::to_string(this->points);
+	this->info += "\nPontos: " + temp;
 }
 
 const char* Player::getInfo()
