@@ -3,6 +3,7 @@
 #include <list>
 #include <string>
 #include <thread>
+#include <atomic>
 #include <cstdio>
 #include <ctime>
 #include <cstdint>
@@ -13,10 +14,6 @@
 
 #define CYCLE_SIZE 10
 #define string_equal(s,se) !strcmp(s, se)
-
-std::atomic<bool> flag1, flag2, flag3;
-
-void player(uint16_t PORT);
 
 enum class PlayerStatus
 {
@@ -46,7 +43,7 @@ private:
     PlayerStatus status;
     void setInfo();
 public:
-    Player(char* name,  uint16_t hp, uint16_t defense, char* names[5], int index, uint16_t damage[5]);
+    Player(char* name,  uint16_t hp, uint16_t defense, char* names[], uint16_t damage[5]);
     void setPower(char* name, int index, uint16_t damage);
     void setGodMode();
     void hit(uint16_t damage);
@@ -70,3 +67,8 @@ public:
     int setMapEffect(int x, int y);
     int getPlayers(int x, int y);
 };
+
+//std::atomic<bool> flag1, flag2, flag3;
+//std::atomic<Player*> playerList[10];
+
+void player(uint16_t PORT);

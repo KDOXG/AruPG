@@ -4,13 +4,16 @@
 #include "lib.h"
 #pragma comment(lib,"Ws2_32.lib")
 
+std::atomic<Player*> playerList[10];
+std::atomic<bool> flag1, flag2, flag3;
+
 int main(int argc, char* argv[])
 {
     // Application params
-    flag1 = false;
+    /*flag1 = false;
     flag2 = false;
     flag3 = false;
-
+    */
 
     std::string message;
 
@@ -78,6 +81,18 @@ int main(int argc, char* argv[])
 
 void player(uint16_t PORT)
 {
+    //For Application
+    int player_i = PORT == 9000 ? 0 : 1;
+    std::string temp;
+    char* a[5];
+    for (int i = 0; i < 5; i++) { a[i] = (char*)malloc(1); a[i] = (char*)"A"; }
+    uint16_t b[5] = { 2,2,2,2,2 };
+
+    Player p( (char*)"Abc", (uint16_t)65, (uint16_t)2, a, b);
+
+    playerList[player_i] = &p;
+
+    //For Server
     SOCKET server, connection;
     sockaddr_in socketInfo, socketClient;
     int clientSize = sizeof(sockaddr_in);
@@ -94,10 +109,12 @@ void player(uint16_t PORT)
     }
     listen(server, SOMAXCONN);
 
+    //For Application
     std::string enviar;
     char receber[128];
     std::string recebido;
 
+    //Main loop
     connection = accept(server, (sockaddr*)&socketClient, &clientSize);
     for(clock_t clk = clock(); true; clk = clock())
     {
@@ -117,31 +134,38 @@ void player(uint16_t PORT)
 
         if (string_equal(receber, "START"))
         {
-
+            
+            send(connection, enviar.c_str(), enviar.size(), 0);
         }
         else if (string_equal(receber, "MAGIA"))
         {
 
+            send(connection, enviar.c_str(), enviar.size(), 0);
         }
         else if (string_equal(receber, "ATACA"))
         {
 
+            send(connection, enviar.c_str(), enviar.size(), 0);
         }
         else if (string_equal(receber, "MOVER"))
         {
 
+            send(connection, enviar.c_str(), enviar.size(), 0);
         }
         else if (string_equal(receber, "FALAR"))
         {
 
+            send(connection, enviar.c_str(), enviar.size(), 0);
         }
         else if (string_equal(receber, "OLHAR"))
         {
 
+            send(connection, enviar.c_str(), enviar.size(), 0);
         }
         else if (string_equal(receber, "GODMO"))
         {
 
+            send(connection, enviar.c_str(), enviar.size(), 0);
         }
         else
             printf("Something something went wrong with this player lol.\n\n");

@@ -1,6 +1,6 @@
 #include "lib.h"
 
-Player::Player(char* name, uint16_t hp, uint16_t defense, char* names[5], int index, uint16_t damage[5])
+Player::Player(char* name, uint16_t hp, uint16_t defense, char* names[], uint16_t damage[5])
 {
 	this->name = name;
 	this->hp = hp;
