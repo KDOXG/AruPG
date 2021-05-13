@@ -7,6 +7,9 @@
 int main(int argc, char* argv[])
 {
     // Application params
+    flag1 = false;
+    flag2 = false;
+    flag3 = false;
 
 
     std::string message;
@@ -93,21 +96,60 @@ void player(uint16_t PORT)
 
     std::string enviar;
     char* receber = (char*)malloc(128);
+    std::string atual;
 
     connection = accept(server, (sockaddr*)&socketClient, &clientSize);
     for(clock_t clk = clock(); true; clk = clock())
     {
         enviar = "MAP";
         send(connection, enviar.c_str(), enviar.size(), 0);
+        enviar = "LOG";
+        send(connection, enviar.c_str(), enviar.size(), 0);
 
 
         recv(connection, receber, 128, 0);
 
-        if (receber == 0 || !strcmp(receber, "QUIT"))
+        if (receber == 0 || string_equal(receber,"QUIT"))
             break;
 
-        while (((float)(clock() - clk)) / CLOCKS_PER_SEC < 0.5);
+        atual = receber;
+        receber[5] = '\0';
+
+        if (string_equal(receber, "START"))
+        {
+
+        }
+        else if (string_equal(receber, "MAGIA"))
+        {
+
+        }
+        else if (string_equal(receber, "ATACA"))
+        {
+
+        }
+        else if (string_equal(receber, "MOVER"))
+        {
+
+        }
+        else if (string_equal(receber, "FALAR"))
+        {
+
+        }
+        else if (string_equal(receber, "OLHAR"))
+        {
+
+        }
+        else if (string_equal(receber, "GODMO"))
+        {
+
+        }
+        else
+            printf("Something something went wrong with this player lol.\n\n");
+
+        while (((float)(clock() - clk)) / CLOCKS_PER_SEC < CYCLE_SIZE);
     }
+
+    free(receber);
 
     closesocket(server);
     WSACleanup();

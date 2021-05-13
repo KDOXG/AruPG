@@ -11,6 +11,11 @@
 #include <conio.h>
 //#include "./SDL2/include/SDL.h"
 
+#define CYCLE_SIZE 10
+#define string_equal(s,se) !strcmp(s, se)
+
+std::atomic<bool> flag1, flag2, flag3;
+
 void player(uint16_t PORT);
 
 enum class PlayerStatus
