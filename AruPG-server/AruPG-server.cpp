@@ -96,7 +96,7 @@ void player(uint16_t PORT)
 
     std::string enviar;
     char receber[128];
-    std::string atual;
+    std::string recebido;
 
     connection = accept(server, (sockaddr*)&socketClient, &clientSize);
     for(clock_t clk = clock(); true; clk = clock())
@@ -112,7 +112,7 @@ void player(uint16_t PORT)
         if (receber == 0 || string_equal(receber,"QUIT"))
             break;
 
-        atual = receber;
+        recebido = receber;
         receber[5] = '\0';
 
         if (string_equal(receber, "START"))
@@ -148,8 +148,6 @@ void player(uint16_t PORT)
 
         while (((float)(clock() - clk)) / CLOCKS_PER_SEC < CYCLE_SIZE);
     }
-
-    free(receber);
 
     closesocket(server);
     WSACleanup();
