@@ -95,7 +95,7 @@ void player(uint16_t PORT)
     listen(server, SOMAXCONN);
 
     std::string enviar;
-    char* receber = (char*)malloc(128);
+    char receber[128];
     std::string atual;
 
     connection = accept(server, (sockaddr*)&socketClient, &clientSize);
