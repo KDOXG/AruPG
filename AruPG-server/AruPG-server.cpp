@@ -9,7 +9,7 @@ std::atomic<bool> setPlayer[10] = { false };
 std::atomic<std::string> messagePlayer[10];
 std::atomic<bool> flag1, flag2, flag3;
 std::atomic<uint8_t> playerQnt;
-std::atomic<std::string> log;
+std::atomic<std::string> logPlayer;
 std::atomic<char> response[128];
 
 int main(int argc, char* argv[])
@@ -93,7 +93,7 @@ void player(uint16_t PORT)
     int player_i = PORT == 9000 ? 0 : 1;
     std::string tmp;
     char* blank_names[5];
-    for (int i = 0; i < 5; i++) { blank_names[i] = (char*)malloc(1); blank_names[i] = strdup("BLANK"); }
+    for (int i = 0; i < 5; i++) { blank_names[i] = (char*)malloc(1); blank_names[i] = _strdup("BLANK"); }
     int16_t blank_damage[5] = { 0,0,0,0,0 };
 
     Player *jogador, *temp;// = new Player((char*)"Abc", (uint16_t)65, (uint16_t)2, blank_names, blank_damage);
@@ -130,9 +130,9 @@ void player(uint16_t PORT)
         enviar = "MAP";
         send(connection, enviar.c_str(), enviar.size(), 0);
         //LOG
-        enviar = log;
+        enviar = logPlayer.load();
         send(connection, enviar.c_str(), enviar.size(), 0);
-        log.store("");
+        logPlayer.store("");
         //MSG
         enviar = messagePlayer[player_i].load();
         send(connection, enviar.c_str(), enviar.size(), 0);
@@ -158,7 +158,7 @@ void player(uint16_t PORT)
             else
                 tmp += std::to_string(player_i);
             tmp += " disconnected.";
-            log.store(tmp);
+            logPlayer.store(tmp);
             
             break;
         }
@@ -195,7 +195,7 @@ void player(uint16_t PORT)
             param3 = recebido;
 
             temp = new Player(playerList[player_i].load());
-            if (temp->setPower(strdup(param1.c_str()), stol(param2)-1, (int16_t)stoul(param3)))
+            if (temp->setPower(_strdup(param1.c_str()), stol(param2)-1, (int16_t)stoul(param3)))
             {
                 playerList[player_i].store(*temp);
                 enviar = "Magic set!";

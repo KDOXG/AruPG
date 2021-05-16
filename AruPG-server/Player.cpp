@@ -2,12 +2,12 @@
 
 Player::Player(char* name, uint16_t hp, uint16_t defense, char* names[], int16_t damage[5])
 {
-	strncpy(this->name, name, strlen(name));
+	strncpy_s(this->name, name, strlen(name));
 	this->hp = hp;
 	this->defense = defense;
 	this->points = 0;
 	for (int i = 0; i < 5; i++)
-		setPower(strdup(names[i]), i, damage[i]);
+		setPower(_strdup(names[i]), i, damage[i]);
 	this->status = PlayerStatus::PAUSE;
 	setInfo();
 }
@@ -19,7 +19,7 @@ bool Player::setPower(char* name, int index, int16_t damage)
 		free(name);
 		return false;
 	}
-	strncpy(this->power[index].name, name, strlen(name));
+	strncpy_s(this->power[index].name, name, strlen(name));
 	free(name);
 	this->power[index].damage = damage;
 	//this->power[index].animation = image_anim;
@@ -53,7 +53,7 @@ bool Player::isDEAD()
 	return this->status == PlayerStatus::DEAD ? true : false;
 }
 
-bool isPAUSE()
+bool Player::isPAUSE()
 {
 	return this->status == PlayerStatus::PAUSE ? true : false;
 }
