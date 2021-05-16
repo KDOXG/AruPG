@@ -4,13 +4,21 @@
 #include "lib.h"
 #pragma comment(lib,"Ws2_32.lib")
 
-std::atomic<Player*> playerList[10];
+std::atomic<Player> playerList[10];
+std::atomic<bool> setPlayer[10] = { false };
+std::atomic<std::string> messagePlayer[10];
 std::atomic<bool> flag1, flag2, flag3;
+std::atomic<uint8_t> playerQnt;
+std::atomic<std::string> log;
+std::atomic<char> response[128];
 
 int main(int argc, char* argv[])
 {
     // Application params
-    /*flag1 = false;
+    playerQnt = 0;
+    
+    /*
+    flag1 = false;
     flag2 = false;
     flag3 = false;
     */
@@ -83,14 +91,14 @@ void player(uint16_t PORT)
 {
     //For Application
     int player_i = PORT == 9000 ? 0 : 1;
-    std::string temp;
-    char* a[5];
-    for (int i = 0; i < 5; i++) { a[i] = (char*)malloc(1); a[i] = (char*)"A"; }
-    uint16_t b[5] = { 2,2,2,2,2 };
+    std::string tmp;
+    char* blank_names[5];
+    for (int i = 0; i < 5; i++) { blank_names[i] = (char*)malloc(1); blank_names[i] = strdup("BLANK"); }
+    int16_t blank_damage[5] = { 0,0,0,0,0 };
 
-    Player p( (char*)"Abc", (uint16_t)65, (uint16_t)2, a, b);
+    Player *jogador, *temp;// = new Player((char*)"Abc", (uint16_t)65, (uint16_t)2, blank_names, blank_damage);
 
-    playerList[player_i] = &p;
+    //playerList[player_i].store(jogador);
 
     //For Server
     SOCKET server, connection;
@@ -112,67 +120,193 @@ void player(uint16_t PORT)
     //For Application
     std::string enviar;
     char receber[128];
-    std::string recebido;
+    std::string recebido, param1, param2, param3;
 
     //Main loop
     connection = accept(server, (sockaddr*)&socketClient, &clientSize);
-    for(clock_t clk = clock(); true; clk = clock())
+    for(clock_t clk = clock(), end_clk; true; clk = clock())
     {
+        //MAP
         enviar = "MAP";
         send(connection, enviar.c_str(), enviar.size(), 0);
-        enviar = "LOG";
+        //LOG
+        enviar = log;
         send(connection, enviar.c_str(), enviar.size(), 0);
+        log.store("");
+        //MSG
+        enviar = messagePlayer[player_i].load();
+        send(connection, enviar.c_str(), enviar.size(), 0);
+        messagePlayer[player_i].store("");
 
 
         recv(connection, receber, 128, 0);
 
-        if (receber == 0 || string_equal(receber,"QUIT"))
+        //Apaga seu personagem e sai do jogo
+        if (receber == 0 || string_equal(receber, "QUIT"))
+        {
+            tmp = "Player ";
+            if (setPlayer[player_i].load())
+            {
+                temp = new Player(playerList[player_i].load());
+                tmp += temp->getName();
+                //temp->hit(MAXINT16);
+                //playerList[player_i].store(*temp);
+                delete(temp);
+                playerQnt--;
+                setPlayer[player_i].store(false);
+            }
+            else
+                tmp += std::to_string(player_i);
+            tmp += " disconnected.";
+            log.store(tmp);
+            
             break;
+        }
 
         recebido = receber;
         receber[5] = '\0';
 
+        //Inicializa o personagem com nome, hp e defesa
         if (string_equal(receber, "START"))
         {
+            param1 = recebido.substr( recebido.find('\"') + 1, recebido.rfind('\"') - (recebido.find('\"') + 1) );
+            recebido = recebido.substr( recebido.rfind('\"') + 2, recebido.size() );
+            param2 = recebido.substr( 0, recebido.find(' ') );
+            recebido = recebido.substr( recebido.find(' '), recebido.size() );
+            param3 = recebido;
+
+            jogador = new Player((char*)param1.c_str(), (uint16_t)stoul(param2), (uint16_t)stoul(param3), blank_names, blank_damage);
+            playerList[player_i].store(*jogador);
+            setPlayer[player_i].store(true);
+            playerQnt++;
+            delete(jogador);
+
+            enviar = "Done!";
+            send(connection, enviar.c_str(), enviar.size(), 0);
+        }
+
+        //Cria uma abilidade para o personagem, com nome, dano e o slot (até 5) que irá ocupar
+        else if (string_equal(receber, "MAGIA"))
+        {
+            param1 = recebido.substr(recebido.find('\"') + 1, recebido.rfind('\"') - (recebido.find('\"') + 1));
+            recebido = recebido.substr(recebido.rfind('\"') + 2, recebido.size());
+            param2 = recebido.substr(0, recebido.find(' '));
+            recebido = recebido.substr(recebido.find(' '), recebido.size());
+            param3 = recebido;
+
+            temp = new Player(playerList[player_i].load());
+            if (temp->setPower(strdup(param1.c_str()), stol(param2)-1, (int16_t)stoul(param3)))
+            {
+                playerList[player_i].store(*temp);
+                enviar = "Magic set!";
+            }
+            else
+                enviar = "Invalid index! Slot must be between 1 and 5.";
+            delete(temp);
+
+            send(connection, enviar.c_str(), enviar.size(), 0);
+        }
+
+        //Ataca um personagem ou efeito da mesa com uma determinada abilidade do seu personagem
+        else if (string_equal(receber, "ATACA"))
+        {
+            //mapa
+            send(connection, enviar.c_str(), enviar.size(), 0);
+        }
+
+        //Move o seu personagem para as coordenadas x e y determinadas
+        else if (string_equal(receber, "MOVER"))
+        {
+            //mapa
+            send(connection, enviar.c_str(), enviar.size(), 0);
+        }
+
+        //Envia uma mensagem de texto para um jogador da mesa
+        else if (string_equal(receber, "FALAR"))
+        {
+            param1 = recebido.substr(recebido.find('\"') + 1, recebido.rfind('\"') - (recebido.find('\"') + 1));
+            recebido = recebido.substr(recebido.rfind('\"') + 2, recebido.size());
+            param2 = recebido.substr(recebido.find('/') + 1, recebido.rfind('/') - (recebido.find('/') + 1));
+
+            //Search players
+            for (int i = 0; i < 10; i++)
+            {
+                if (setPlayer[i].load())
+                {
+                    temp = new Player(playerList[i].load());
+                    //If found player - do stuff
+                    if (string_equal(param1.c_str(), temp->getName()) && !temp->isDEAD())
+                    {
+                        delete(temp);
+                        temp = new Player(playerList[player_i].load());
+                        tmp = "MSG ";
+                        tmp += temp->getName() + ':' + param2;
+                        messagePlayer[i].store(tmp);
+                        delete(temp);
+                        enviar = "Message sent.";
+                        break;
+                    }
+                    delete(temp);
+                }
+
+                if (i == playerQnt - 1)
+                    enviar = "Player not found.";
+            }
             
             send(connection, enviar.c_str(), enviar.size(), 0);
         }
-        else if (string_equal(receber, "MAGIA"))
-        {
 
-            send(connection, enviar.c_str(), enviar.size(), 0);
-        }
-        else if (string_equal(receber, "ATACA"))
-        {
-
-            send(connection, enviar.c_str(), enviar.size(), 0);
-        }
-        else if (string_equal(receber, "MOVER"))
-        {
-
-            send(connection, enviar.c_str(), enviar.size(), 0);
-        }
-        else if (string_equal(receber, "FALAR"))
-        {
-
-            send(connection, enviar.c_str(), enviar.size(), 0);
-        }
+        //Recebe informações de um jogador da mesa
         else if (string_equal(receber, "OLHAR"))
         {
+            param1 = recebido.substr(recebido.find('\"') + 1, recebido.rfind('\"') - (recebido.find('\"') + 1));
+
+            //Search players
+            for (int i = 0; i < 10; i++)
+            {
+                if (setPlayer[i].load())
+                {
+                    temp = new Player(playerList[i].load());
+                    //If found player - do stuff
+                    if (string_equal(param1.c_str(), temp->getName()))
+                    {
+                        enviar = temp->getInfo();
+                        delete(temp);
+                        break;
+                    }
+                    delete(temp);
+                }
+                
+                if (i == 9)
+                    enviar = "Player not found.";
+            }
 
             send(connection, enviar.c_str(), enviar.size(), 0);
         }
+
+        //Ativa o modo imortal ao seu personagem
         else if (string_equal(receber, "GODMO"))
         {
-
+            if (setPlayer[player_i].load())
+            {
+                temp = jogador;
+                jogador = new Player(*temp);
+                delete(temp);
+                jogador->setGodMode();
+                playerList[player_i].store(*jogador);
+                enviar = "God Mode activated.";
+            }
+            else
+                enviar = "Not happening.";
             send(connection, enviar.c_str(), enviar.size(), 0);
         }
-        else
-            printf("Something something went wrong with this player lol.\n\n");
-
-        while (((float)(clock() - clk)) / CLOCKS_PER_SEC < CYCLE_SIZE);
+        else printf("Something something went wrong with this player lol.\n\n");
+        
+        do end_clk = clock(); while ((float)(end_clk - clk) / CLOCKS_PER_SEC < CYCLE_SIZE);
     }
 
+    enviar = "Disconnected.";
+    send(connection, enviar.c_str(), enviar.size(), 0);
     closesocket(server);
     WSACleanup();
 }

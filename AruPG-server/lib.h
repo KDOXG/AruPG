@@ -5,6 +5,7 @@
 #include <thread>
 #include <atomic>
 #include <cstdio>
+#include <cstdlib>
 #include <ctime>
 #include <cstdint>
 #include <Windows.h>
@@ -12,7 +13,7 @@
 #include <conio.h>
 //#include "./SDL2/include/SDL.h"
 
-#define CYCLE_SIZE 10
+#define CYCLE_SIZE 2
 #define string_equal(s,se) !strcmp(s, se)
 
 enum class PlayerStatus
@@ -25,8 +26,8 @@ enum class PlayerStatus
 
 struct Abilities
 {
-    char* name;
-    uint16_t damage;
+    char name[50];
+    int16_t damage;
     /*graphics animation; para receber um sprite de animacao - SDL2 */
 };
 
@@ -34,7 +35,7 @@ class Player
 {
 private:
     //graphics person;  /* para receber um sprite de personagem - SDL2 */
-    char* name;
+    char name[50];
     std::string info;
     uint16_t hp;    //HARII POTTAA
     uint16_t defense;
@@ -43,17 +44,21 @@ private:
     PlayerStatus status;
     void setInfo();
 public:
-    Player(char* name,  uint16_t hp, uint16_t defense, char* names[], uint16_t damage[5]);
-    void setPower(char* name, int index, uint16_t damage);
+    Player(char* name,  uint16_t hp, uint16_t defense, char* names[], int16_t damage[5]);
+    bool setPower(char* name, int index, int16_t damage);
+    int16_t getPower(int index);
+    void hit(int16_t damage);
     void setGodMode();
-    void hit(uint16_t damage);
+    bool isDEAD();
+    bool isPAUSE();
     const char* getInfo();
+    const char* getName();
     void start();
 };
 
 struct Elements
 {
-    std::list<Player> people;
+    std::list<Player*> people;
     std::list<Abilities> effect;
 };
 

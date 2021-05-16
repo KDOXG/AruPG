@@ -1,30 +1,32 @@
 #include "lib.h"
 
-Player::Player(char* name, uint16_t hp, uint16_t defense, char* names[], uint16_t damage[5])
+Player::Player(char* name, uint16_t hp, uint16_t defense, char* names[], int16_t damage[5])
 {
-	this->name = name;
+	strncpy(this->name, name, strlen(name));
 	this->hp = hp;
 	this->defense = defense;
 	this->points = 0;
 	for (int i = 0; i < 5; i++)
-		setPower(names[i], i, damage[i]);
+		setPower(strdup(names[i]), i, damage[i]);
 	this->status = PlayerStatus::PAUSE;
 	setInfo();
 }
 
-void Player::setPower(char* name, int index, uint16_t damage)
+bool Player::setPower(char* name, int index, int16_t damage)
 {
-	this->power[index].name = name;
+	if (index < 0 || index >= 5)
+	{
+		free(name);
+		return false;
+	}
+	strncpy(this->power[index].name, name, strlen(name));
+	free(name);
 	this->power[index].damage = damage;
 	//this->power[index].animation = image_anim;
+	return true;
 }
 
-void Player::setGodMode()
-{
-	this->status = PlayerStatus::GOD;
-}
-
-void Player::hit(uint16_t damage)
+void Player::hit(int16_t damage)
 {
 	if (this->status != PlayerStatus::GOD)
 		if (damage >= this->defense)
@@ -41,6 +43,21 @@ void Player::hit(uint16_t damage)
 			}
 }
 
+void Player::setGodMode()
+{
+	this->status = PlayerStatus::GOD;
+}
+
+bool Player::isDEAD()
+{
+	return this->status == PlayerStatus::DEAD ? true : false;
+}
+
+bool isPAUSE()
+{
+	return this->status == PlayerStatus::PAUSE ? true : false;
+}
+
 void Player::setInfo()
 {
 	std::string temp;
@@ -55,6 +72,11 @@ void Player::setInfo()
 const char* Player::getInfo()
 {
 	return this->info.c_str();
+}
+
+const char* Player::getName()
+{
+	return this->name;
 }
 
 void Player::start()
