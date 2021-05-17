@@ -45,11 +45,6 @@ private:
     void setInfo();
 public:
     Player(char* name,  uint16_t hp, uint16_t defense, char* names[], int16_t damage[5]);
-    Player(const Player& newPlayer);
-    Player(const Player&& newPlayer) noexcept;
-    ~Player();
-    Player& operator=(Player& newPlayer);
-    Player& operator=(Player&& newPlayer) noexcept;
     bool setPower(char* name, int index, int16_t damage);
     int16_t getPower(int index);
     void hit(int16_t damage);

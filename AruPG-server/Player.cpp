@@ -12,64 +12,6 @@ Player::Player(char* name, uint16_t hp, uint16_t defense, char* names[], int16_t
 	setInfo();
 }
 
-Player::Player(const Player& newPlayer)
-{
-	if (!string_equal(this->name, newPlayer.name)) strncpy_s(this->name, name, strlen(name));
-	this->hp = newPlayer.hp;
-	this->defense = newPlayer.defense;
-	this->points = newPlayer.points;
-	for (int i = 0; i < 5; i++)
-		setPower(_strdup(newPlayer.power[i].name), i, newPlayer.power[i].damage);
-	this->status = newPlayer.status;
-	this->setInfo();
-}
-
-Player::Player(const Player&& newPlayer) noexcept
-			: name()
-			, info(newPlayer.info)
-			, hp(newPlayer.hp)
-			, defense(newPlayer.defense)
-			, points(newPlayer.points)
-			, status(newPlayer.status)
-			, power()
-{ }
-
-Player::~Player()
-{ }
-
-Player& Player::operator=(Player& newPlayer)
-{
-	if (!string_equal(this->name, newPlayer.name)) strncpy_s(this->name, name, strlen(name));
-	this->hp = newPlayer.hp;
-	this->defense = newPlayer.defense;
-	this->points = newPlayer.points;
-	for (int i = 0; i < 5; i++)
-		if (!(string_equal(this->power[i].name, newPlayer.power[i].name)
-			&& this->power[i].damage == newPlayer.power[i].damage))
-			setPower(_strdup(newPlayer.power[i].name), i, newPlayer.power[i].damage);
-	this->status = newPlayer.status;
-	this->setInfo();
-	return *this;
-}
-
-Player& Player::operator=(Player&& newPlayer) noexcept
-{
-	if (this != &newPlayer)
-	{
-		if (!string_equal(this->name, newPlayer.name)) strncpy_s(this->name, name, strlen(name));
-		this->hp = newPlayer.hp;
-		this->defense = newPlayer.defense;
-		this->points = newPlayer.points;
-		for (int i = 0; i < 5; i++)
-			if (!(string_equal(this->power[i].name, newPlayer.power[i].name)
-				&& this->power[i].damage == newPlayer.power[i].damage))
-				setPower(_strdup(newPlayer.power[i].name), i, newPlayer.power[i].damage);
-		this->status = newPlayer.status;
-		this->setInfo();
-	}
-	return *this;
-}
-
 bool Player::setPower(char* name, int index, int16_t damage)
 {
 	if (index < 0 || index >= 5)
