@@ -190,7 +190,6 @@ void PlayerMove(int player_i)
     //For Application
     std::string tmp;
     std::string recebido, param1, param2, param3;
-    Player *jogador, *temp;
 
     char* blank_names[5];
     char* temp_for_malloc;
@@ -225,10 +224,9 @@ void PlayerMove(int player_i)
         recebido = recebido.substr(recebido.find(' '), recebido.size());
         param3 = recebido;
 
-        jogador = new Player((char*)param1.c_str(), (uint16_t)stoul(param2), (uint16_t)stoul(param3), blank_names, blank_damage);
         if (playerSet[player_i])
             delete(playerList[player_i]);
-        playerList[player_i] = jogador;
+        playerList[player_i] = new Player((char*)param1.c_str(), (uint16_t)stoul(param2), (uint16_t)stoul(param3), blank_names, blank_damage);
         playerSet[player_i] = true;
 
         enviar = "Done!";

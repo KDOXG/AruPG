@@ -12,11 +12,6 @@ Player::Player(char* name, uint16_t hp, uint16_t defense, char* names[], int16_t
 	setInfo();
 }
 
-Player::Player()
-{
-
-}
-
 bool Player::setPower(char* name, int index, int16_t damage)
 {
 	if (index < 0 || index >= 5)
