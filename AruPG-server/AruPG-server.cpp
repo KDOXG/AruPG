@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
         //ConnectionWithClient = accept(ServerMain, (sockaddr*)&socketClient, &clientSize);
         std::cout << "Connection Accepted! " << 2-count << " player remains...\n";
 
-        message = std::to_string(PORTS[count-1]);
+        message = std::to_string(PORTS[(int64_t)count-1]);
         
         send(ConnectionWithClient, message.c_str(), message.size(), 0);
     }
@@ -250,8 +250,8 @@ void PlayerMove(int player_i)
 
         if (playerSet[!player_i])
         {
-            playerMessage[!player_i] = "MSG ";
-            playerMessage[!player_i] += playerList[!player_i]->getName() + ':' + param1;
+            playerMessage[!player_i] = "MSG /";
+            playerMessage[!player_i] += playerList[!player_i]->getName() + ':' + param1 + '/';
             enviar = "Message sent.";
         }
         else
