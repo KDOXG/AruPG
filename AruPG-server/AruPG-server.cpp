@@ -4,29 +4,16 @@
 #include "lib.h"
 #pragma comment(lib,"Ws2_32.lib")
 
-/*
-std::atomic<Player> playerList[10];
-std::atomic<bool> setPlayer[10] = { false };
-std::atomic<std::string> messagePlayer[10];
-*/
 Player* playerList[2];
 bool playerSet[2] = { false };
-std::string messagePlayer[2];
+std::string playerMessage[2];
 std::string playerLog;
 std::string enviar;
 char receber[128];
-//std::atomic<bool> flag1, flag2, flag3;
-//std::atomic<char> response[128];
 
 int main(int argc, char* argv[])
 {
     // Application params
-    
-    /*
-    flag1 = false;
-    flag2 = false;
-    flag3 = false;
-    */
 
     std::string message;
 
@@ -90,15 +77,6 @@ int main(int argc, char* argv[])
 
 void MainGame(uint16_t PORT1, uint16_t PORT2)
 {
-
-    //Player player1, player2;
-    //playerList[0] = &player1;
-    //playerList[1] = &player2;
-
-    //Player *jogador, *temp;// = new Player((char*)"Abc", (uint16_t)65, (uint16_t)2, blank_names, blank_damage);
-
-    //playerList[player_i].store(jogador);
-
     //For Server
     SOCKET server1, connection1;
     SOCKET server2, connection2;
@@ -148,9 +126,9 @@ void MainGame(uint16_t PORT1, uint16_t PORT2)
             send(connection1, enviar.c_str(), enviar.size(), 0);
 
             //MSG
-            enviar = messagePlayer[0];
+            enviar = playerMessage[0];
             send(connection1, enviar.c_str(), enviar.size(), 0);
-            messagePlayer[0] = "";
+            playerMessage[0] = "";
 
             recv(connection1, receber, 128, 0);
             PlayerMove(0);
@@ -164,9 +142,9 @@ void MainGame(uint16_t PORT1, uint16_t PORT2)
             send(connection2, enviar.c_str(), enviar.size(), 0);
 
             //MSG
-            enviar = messagePlayer[1];
+            enviar = playerMessage[1];
             send(connection2, enviar.c_str(), enviar.size(), 0);
-            messagePlayer[1] = "";
+            playerMessage[1] = "";
 
             recv(connection2, receber, 128, 0);
             PlayerMove(1);
@@ -191,15 +169,12 @@ void PlayerMove(int player_i)
     std::string tmp;
     std::string recebido, param1, param2, param3;
 
-    char* blank_names[5];
     char* temp_for_malloc;
-    for (int i = 0; i < 5; i++) { blank_names[i] = _strdup("BLANK"); }
-    int16_t blank_damage[5] = { 0,0,0,0,0 };
 
     //Apaga seu personagem e sai do jogo
     if (string_equal(receber, "QUIT"))
     {
-        playerLog = "Player ";
+        playerLog = "LOG /Player ";
         if (playerSet[player_i])
         {
             playerLog += playerList[player_i]->getName();
@@ -208,7 +183,7 @@ void PlayerMove(int player_i)
         }
         else
             playerLog += std::to_string(player_i);
-        playerLog += " disconnected.";
+        playerLog += " disconnected./";
         return;
     }
 
@@ -226,8 +201,15 @@ void PlayerMove(int player_i)
 
         if (playerSet[player_i])
             delete(playerList[player_i]);
+
+        char* blank_names[5];
+        for (int i = 0; i < 5; i++) blank_names[i] = _strdup("BLANK");
+        int16_t blank_damage[5] = { 0,0,0,0,0 };
+
         playerList[player_i] = new Player((char*)param1.c_str(), (uint16_t)stoul(param2), (uint16_t)stoul(param3), blank_names, blank_damage);
         playerSet[player_i] = true;
+
+        for (int i = 0; i < 5; i++) free(blank_names[i]);
 
         enviar = "Done!";
     }
@@ -246,6 +228,7 @@ void PlayerMove(int player_i)
             enviar = "Magic set!";
         else
             enviar = "Couldn't create magic.";
+        free(temp_for_malloc);
     }
 
     //Ataca um personagem ou efeito da mesa com uma determinada abilidade do seu personagem
@@ -267,8 +250,8 @@ void PlayerMove(int player_i)
 
         if (playerSet[!player_i])
         {
-            messagePlayer[!player_i] = "MSG ";
-            messagePlayer[!player_i] += playerList[!player_i]->getName() + ':' + param1;
+            playerMessage[!player_i] = "MSG ";
+            playerMessage[!player_i] += playerList[!player_i]->getName() + ':' + param1;
             enviar = "Message sent.";
         }
         else
