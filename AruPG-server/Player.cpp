@@ -7,20 +7,21 @@ Player::Player(char* name, uint16_t hp, uint16_t defense, char* names[], int16_t
 	this->defense = defense;
 	this->points = 0;
 	for (int i = 0; i < 5; i++)
-		setPower(_strdup(names[i]), i, damage[i]);
+		setPower(names[i], i, damage[i]);
 	this->status = PlayerStatus::PAUSE;
 	setInfo();
+}
+
+Player::Player()
+{
+
 }
 
 bool Player::setPower(char* name, int index, int16_t damage)
 {
 	if (index < 0 || index >= 5)
-	{
-		free(name);
 		return false;
-	}
 	strncpy_s(this->power[index].name, name, strlen(name));
-	free(name);
 	this->power[index].damage = damage;
 	//this->power[index].animation = image_anim;
 	return true;

@@ -13,8 +13,10 @@
 #include <conio.h>
 //#include "./SDL2/include/SDL.h"
 
-#define CYCLE_SIZE 2
+#define CYCLE_SIZE 10
 #define string_equal(s,se) !strcmp(s, se)
+
+#define PLAYER_N 2
 
 enum class PlayerStatus
 {
@@ -45,6 +47,7 @@ private:
     void setInfo();
 public:
     Player(char* name,  uint16_t hp, uint16_t defense, char* names[], int16_t damage[5]);
+    Player();
     bool setPower(char* name, int index, int16_t damage);
     int16_t getPower(int index);
     void hit(int16_t damage);
@@ -76,4 +79,5 @@ public:
 //std::atomic<bool> flag1, flag2, flag3;
 //std::atomic<Player*> playerList[10];
 
-void player(uint16_t PORT);
+void MainGame(uint16_t PORT1, uint16_t PORT2);
+void PlayerMove(int player_i);
