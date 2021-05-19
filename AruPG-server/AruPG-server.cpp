@@ -8,6 +8,9 @@ Player* playerList[2];
 bool playerSet[2] = { false };
 std::string playerMessage[2];
 std::string playerLog;
+
+Map mapa;
+
 std::string enviar;
 char receber[128];
 
@@ -169,6 +172,10 @@ void PlayerMove(int player_i)
     std::string tmp;
     std::string recebido, param1, param2, param3;
 
+    std::list<Abilities>::iterator s, e;
+
+    bool flag1 = false;
+
     char* temp_for_malloc;
 
     //Apaga seu personagem e sai do jogo
@@ -196,7 +203,7 @@ void PlayerMove(int player_i)
         param1 = recebido.substr(recebido.find('\"') + 1, recebido.rfind('\"') - (recebido.find('\"') + 1));
         recebido = recebido.substr(recebido.rfind('\"') + 2, recebido.size());
         param2 = recebido.substr(0, recebido.find(' '));
-        recebido = recebido.substr(recebido.find(' '), recebido.size());
+        recebido = recebido.substr(recebido.find(' ')+1, recebido.size());
         param3 = recebido;
 
         if (playerSet[player_i])
@@ -208,6 +215,7 @@ void PlayerMove(int player_i)
 
         playerList[player_i] = new Player((char*)param1.c_str(), (uint16_t)stoul(param2), (uint16_t)stoul(param3), blank_names, blank_damage);
         playerSet[player_i] = true;
+        mapa.playerMove(0, 0, 0, 0, playerList[player_i]);
 
         for (int i = 0; i < 5; i++) free(blank_names[i]);
 
@@ -220,7 +228,7 @@ void PlayerMove(int player_i)
         param1 = recebido.substr(recebido.find('\"') + 1, recebido.rfind('\"') - (recebido.find('\"') + 1));
         recebido = recebido.substr(recebido.rfind('\"') + 2, recebido.size());
         param2 = recebido.substr(0, recebido.find(' '));
-        recebido = recebido.substr(recebido.find(' '), recebido.size());
+        recebido = recebido.substr(recebido.find(' ')+1, recebido.size());
         param3 = recebido;
         temp_for_malloc = _strdup(param1.c_str());
 
@@ -240,7 +248,32 @@ void PlayerMove(int player_i)
     //Move o seu personagem para as coordenadas x e y determinadas
     else if (string_equal(receber, "MOVER"))
     {
-        //mapa
+        recebido = recebido.substr(recebido.find(' ')+1, recebido.size());
+        param1 = recebido.substr(0, recebido.find(' '));
+        recebido = recebido.substr(recebido.find(' ')+1, recebido.size());
+        param2 = recebido;
+
+        if (std::stoi(param1) < 0 || std::stoi(param1) >= 100 || std::stoi(param2) < 0 || std::stoi(param2) >= 100)
+            enviar = "Invalid position.";
+        else
+        {
+            mapa.playerMove(
+                playerList[player_i]->getPosX(),
+                playerList[player_i]->getPosY(),
+                std::stoi(param1),
+                std::stoi(param2),
+                playerList[player_i]
+            );
+            enviar = "New position set.";
+            if (mapa.checkMapEffect(std::stoi(param1), std::stoi(param2)))
+            {
+                enviar += " However, there was an effect in the area. You suffered damage.";
+                s = mapa.getMapEffect(std::stoi(param1), std::stoi(param2)).begin();
+                e = mapa.getMapEffect(std::stoi(param1), std::stoi(param2)).end();
+                for (; s != e; s++)
+                    playerList[player_i]->hit(s->damage);
+            }
+        }
     }
 
     //Envia uma mensagem de texto para um jogador da mesa

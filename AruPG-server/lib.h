@@ -22,7 +22,6 @@ enum class PlayerStatus
 {
     ALIVE,
     DEAD,
-    PAUSE,
     GOD
 };
 
@@ -43,16 +42,20 @@ private:
     uint16_t defense;
     int64_t points;
     Abilities power[5];
+    int pos_x, pos_y;
     PlayerStatus status;
     void setInfo();
 public:
     Player(char* name,  uint16_t hp, uint16_t defense, char* names[], int16_t damage[5]);
     bool setPower(char* name, int index, int16_t damage);
-    int16_t getPower(int index);
+    int16_t getPower(int index, bool* flag);
     void hit(int16_t damage);
     void setGodMode();
+    void move(int x, int y);
+    int getPosX();
+    int getPosY();
     bool isDEAD();
-    bool isPAUSE();
+    bool isALIVE();
     const char* getInfo();
     const char* getName();
     void start();
@@ -71,12 +74,14 @@ private:
     Elements area[100][100];
 public:
     Map(/*graphics background*/);
-    int setMapEffect(int x, int y);
-    int getPlayers(int x, int y);
+    void setMapEffect(int x, int y, Abilities effect);
+    bool removeMapEffect(int x, int y, std::string name);
+    void removeMapEffect(int x, int y);
+    bool checkMapEffect(int x, int y);
+    std::list<Abilities> getMapEffect(int x, int y);
+    void playerMove(int old_x, int old_y, int new_x, int new_y, Player* player);
+    bool findPlayer(int x, int y, Player* player);
 };
-
-//std::atomic<bool> flag1, flag2, flag3;
-//std::atomic<Player*> playerList[10];
 
 void MainGame(uint16_t PORT1, uint16_t PORT2);
 void PlayerMove(int player_i);

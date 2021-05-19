@@ -6,9 +6,11 @@ Player::Player(char* name, uint16_t hp, uint16_t defense, char* names[], int16_t
 	this->hp = hp;
 	this->defense = defense;
 	this->points = 0;
+	this->pos_x = 0;
+	this->pos_y = 0;
 	for (int i = 0; i < 5; i++)
 		setPower(names[i], i, damage[i]);
-	this->status = PlayerStatus::PAUSE;
+	this->status = PlayerStatus::ALIVE;
 	setInfo();
 }
 
@@ -20,6 +22,17 @@ bool Player::setPower(char* name, int index, int16_t damage)
 	this->power[index].damage = damage;
 	//this->power[index].animation = image_anim;
 	return true;
+}
+
+int16_t Player::getPower(int index, bool *flag)
+{
+	if (index < 0 || index >= 5)
+	{
+		*flag = false;
+		return 0;
+	}
+	*flag = true;
+	return this->power[index].damage;
 }
 
 void Player::hit(int16_t damage)
@@ -44,14 +57,30 @@ void Player::setGodMode()
 	this->status = PlayerStatus::GOD;
 }
 
+void Player::move(int x, int y)
+{
+	this->pos_x = x;
+	this->pos_y = y;
+}
+
+int Player::getPosX()
+{
+	return this->pos_x;
+}
+
+int Player::getPosY()
+{
+	return this->pos_y;
+}
+
 bool Player::isDEAD()
 {
 	return this->status == PlayerStatus::DEAD ? true : false;
 }
 
-bool Player::isPAUSE()
+bool Player::isALIVE()
 {
-	return this->status == PlayerStatus::PAUSE ? true : false;
+	return this->status != PlayerStatus::DEAD ? true : false;
 }
 
 void Player::setInfo()
