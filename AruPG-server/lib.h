@@ -25,10 +25,17 @@ enum class PlayerStatus
     GOD
 };
 
+enum class AbilityKind
+{
+    PLAYER,
+    AREA
+};
+
 struct Abilities
 {
     char name[50];
     int16_t damage;
+    AbilityKind kind;
     /*graphics animation; para receber um sprite de animacao - SDL2 */
 };
 
@@ -46,8 +53,8 @@ private:
     PlayerStatus status;
     void setInfo();
 public:
-    Player(char* name,  uint16_t hp, uint16_t defense, char* names[], int16_t damage[5]);
-    bool setPower(char* name, int index, int16_t damage);
+    Player(char* name,  uint16_t hp, uint16_t defense, char* names[], int16_t damage[5], AbilityKind kind = AbilityKind::PLAYER);
+    bool setPower(char* name, int index, int16_t damage, AbilityKind kind);
     int16_t getPower(int index, bool* flag);
     void hit(int16_t damage);
     void setGodMode();

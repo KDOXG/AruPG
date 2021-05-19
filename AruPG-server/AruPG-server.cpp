@@ -170,7 +170,7 @@ void PlayerMove(int player_i)
 {
     //For Application
     std::string tmp;
-    std::string recebido, param1, param2, param3;
+    std::string recebido, param1, param2, param3, param4;
 
     std::list<Abilities>::iterator s, e;
 
@@ -213,7 +213,13 @@ void PlayerMove(int player_i)
         for (int i = 0; i < 5; i++) blank_names[i] = _strdup("BLANK");
         int16_t blank_damage[5] = { 0,0,0,0,0 };
 
-        playerList[player_i] = new Player((char*)param1.c_str(), (uint16_t)stoul(param2), (uint16_t)stoul(param3), blank_names, blank_damage);
+        playerList[player_i] = new Player(
+                                    (char*)param1.c_str(),
+                                    (uint16_t)stoul(param2),
+                                    (uint16_t)stoul(param3),
+                                    blank_names,
+                                    blank_damage
+                              );
         playerSet[player_i] = true;
         mapa.playerMove(0, 0, 0, 0, playerList[player_i]);
 
@@ -229,10 +235,15 @@ void PlayerMove(int player_i)
         recebido = recebido.substr(recebido.rfind('\"') + 2, recebido.size());
         param2 = recebido.substr(0, recebido.find(' '));
         recebido = recebido.substr(recebido.find(' ')+1, recebido.size());
-        param3 = recebido;
+        param3 = recebido.substr(0, recebido.find(' '));
+        recebido = recebido.substr(recebido.find(' ') + 1, recebido.size());
+        param4 = recebido;
         temp_for_malloc = _strdup(param1.c_str());
 
-        if (playerList[player_i]->setPower(temp_for_malloc, stol(param2) - 1, (int16_t)stoul(param3)))
+        if (playerList[player_i]->setPower(temp_for_malloc, stol(param2) - 1,
+            (int16_t)stoul(param3), 
+            stol(param2) ? AbilityKind::AREA : AbilityKind::PLAYER
+            ))
             enviar = "Magic set!";
         else
             enviar = "Couldn't create magic.";
@@ -242,6 +253,7 @@ void PlayerMove(int player_i)
     //Ataca um personagem ou efeito da mesa com uma determinada abilidade do seu personagem
     else if (string_equal(receber, "ATACA"))
     {
+
         //mapa
     }
 

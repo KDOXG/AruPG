@@ -1,6 +1,6 @@
 #include "lib.h"
 
-Player::Player(char* name, uint16_t hp, uint16_t defense, char* names[], int16_t damage[5])
+Player::Player(char* name, uint16_t hp, uint16_t defense, char* names[], int16_t damage[5], AbilityKind kind = AbilityKind::PLAYER)
 {
 	strncpy_s(this->name, name, strlen(name));
 	this->hp = hp;
@@ -9,17 +9,18 @@ Player::Player(char* name, uint16_t hp, uint16_t defense, char* names[], int16_t
 	this->pos_x = 0;
 	this->pos_y = 0;
 	for (int i = 0; i < 5; i++)
-		setPower(names[i], i, damage[i]);
+		setPower(names[i], i, damage[i], kind);
 	this->status = PlayerStatus::ALIVE;
 	setInfo();
 }
 
-bool Player::setPower(char* name, int index, int16_t damage)
+bool Player::setPower(char* name, int index, int16_t damage, AbilityKind kind)
 {
 	if (index < 0 || index >= 5)
 		return false;
 	strncpy_s(this->power[index].name, name, strlen(name));
 	this->power[index].damage = damage;
+	this->power[index].kind = kind;
 	//this->power[index].animation = image_anim;
 	return true;
 }
