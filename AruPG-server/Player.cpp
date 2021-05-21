@@ -1,6 +1,6 @@
 #include "lib.h"
 
-Player::Player(char* name, uint16_t hp, uint16_t defense, char* names[], int16_t damage[5], AbilityKind kind = AbilityKind::PLAYER)
+Player::Player(char* name, uint16_t hp, uint16_t defense, char* names[], int16_t damage[5], AbilityKind kind)
 {
 	strncpy_s(this->name, name, strlen(name));
 	this->hp = hp;
@@ -25,15 +25,18 @@ bool Player::setPower(char* name, int index, int16_t damage, AbilityKind kind)
 	return true;
 }
 
-int16_t Player::getPower(int index, bool *flag)
+Abilities Player::getPower(int index, bool *flag)
 {
 	if (index < 0 || index >= 5)
-	{
 		*flag = false;
-		return 0;
-	}
-	*flag = true;
-	return this->power[index].damage;
+	else
+		*flag = true;
+	return this->power[index];
+}
+
+AbilityKind Player::getPowerKind(int index)
+{
+	return this->power[index].kind;
 }
 
 void Player::hit(int16_t damage)

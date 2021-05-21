@@ -44,6 +44,22 @@ std::list<Abilities> Map::getMapEffect(int x, int y)
 	return area[x][y].effect;
 }
 
+bool Map::findMapEffect(int x, int y, std::string name)
+{
+	Abilities aux;
+	int n = area[x][y].effect.size();
+	bool flag = false;
+	for (int i = 0; i < n; i++)
+	{
+		aux = area[x][y].effect.front();
+		area[x][y].effect.pop_front();
+		if (string_equal(aux.name, name.c_str()))
+			flag = true;
+		area[x][y].effect.push_back(aux);
+	}
+	return flag;
+}
+
 void Map::playerMove(int old_x, int old_y, int new_x, int new_y, Player* player)
 {
 	Player* aux;
@@ -57,6 +73,11 @@ void Map::playerMove(int old_x, int old_y, int new_x, int new_y, Player* player)
 		area[old_x][old_y].people.push_back(aux);
 	}
 	area[new_x][new_y].people.push_back(player);
+}
+
+bool Map::checkPlayer(int x, int y)
+{
+	return !area[x][y].people.empty();
 }
 
 bool Map::findPlayer(int x, int y, Player* player)

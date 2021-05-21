@@ -53,9 +53,10 @@ private:
     PlayerStatus status;
     void setInfo();
 public:
-    Player(char* name,  uint16_t hp, uint16_t defense, char* names[], int16_t damage[5], AbilityKind kind = AbilityKind::PLAYER);
+    Player(char* name,  uint16_t hp, uint16_t defense, char* names[], int16_t damage[5], AbilityKind kind);
     bool setPower(char* name, int index, int16_t damage, AbilityKind kind);
-    int16_t getPower(int index, bool* flag);
+    Abilities getPower(int index, bool* flag);
+    AbilityKind getPowerKind(int index);
     void hit(int16_t damage);
     void setGodMode();
     void move(int x, int y);
@@ -86,7 +87,9 @@ public:
     void removeMapEffect(int x, int y);
     bool checkMapEffect(int x, int y);
     std::list<Abilities> getMapEffect(int x, int y);
+    bool findMapEffect(int x, int y, std::string name);
     void playerMove(int old_x, int old_y, int new_x, int new_y, Player* player);
+    bool checkPlayer(int x, int y);
     bool findPlayer(int x, int y, Player* player);
 };
 

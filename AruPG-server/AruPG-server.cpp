@@ -172,11 +172,22 @@ void PlayerMove(int player_i)
     std::string tmp;
     std::string recebido, param1, param2, param3, param4;
 
-    std::list<Abilities>::iterator s, e;
+    std::list<Abilities> effectList;
+
+    std::list<Abilities>::iterator it;
 
     bool flag1 = false;
 
     char* temp_for_malloc;
+
+    Abilities this_power;
+
+    //Entrada vazia
+    if (receber[0] == '\0')
+    {
+        enviar = "NON";
+        return;
+    }
 
     //Apaga seu personagem e sai do jogo
     if (string_equal(receber, "QUIT"))
@@ -218,7 +229,8 @@ void PlayerMove(int player_i)
                                     (uint16_t)stoul(param2),
                                     (uint16_t)stoul(param3),
                                     blank_names,
-                                    blank_damage
+                                    blank_damage,
+                                    AbilityKind::PLAYER
                               );
         playerSet[player_i] = true;
         mapa.playerMove(0, 0, 0, 0, playerList[player_i]);
@@ -251,10 +263,70 @@ void PlayerMove(int player_i)
     }
 
     //Ataca um personagem ou efeito da mesa com uma determinada abilidade do seu personagem
-    else if (string_equal(receber, "ATACA"))
+    else if (string_equal(receber, "ATACa"))
     {
+        recebido = recebido.substr(recebido.find('\"') + 1, recebido.size());
+        param1 = recebido.substr(0,recebido.find('\"'));
+        recebido = recebido.substr(recebido.find('\"') + 2, recebido.size());
+        param2 = recebido.substr(0, recebido.find(' '));
+        recebido = recebido.substr(recebido.find(' ') + 1, recebido.size());
+        param3 = recebido.substr(0, recebido.find(' '));
+        recebido = recebido.substr(recebido.find(' ') + 1, recebido.size());
+        param4 = recebido;
 
-        //mapa
+        this_power = playerList[player_i]->getPower(std::stoi(param2) - 1, &flag1);
+
+        if (flag1)
+        {
+            flag1 = string_equal(playerList[!player_i]->getName(), param1.c_str())
+                || string_equal(playerList[player_i]->getName(), param1.c_str());
+            //effectList = mapa.getMapEffect(std::stoi(param3), std::stoi(param4));
+            if (flag1 && mapa.checkPlayer(std::stoi(param3), std::stoi(param4)))
+                if (this_power.kind == AbilityKind::AREA)
+                {
+                    if (mapa.findPlayer(std::stoi(param3), std::stoi(param4), playerList[0]))
+                        playerList[0]->hit(this_power.damage);
+                    if (mapa.findPlayer(std::stoi(param3), std::stoi(param4), playerList[1]))
+                        playerList[1]->hit(this_power.damage);
+                    enviar = "Damage applied to all players in position.";
+                }
+                else //this_power.kind == AbilityKind::PLAYER
+                    if (mapa.findPlayer(std::stoi(param3), std::stoi(param4), playerList[0]))
+                    {
+                        playerList[0]->hit(this_power.damage);
+                        enviar = "Damage applied to player.";
+                    }
+                    else if (mapa.findPlayer(std::stoi(param3), std::stoi(param4), playerList[1]))
+                    {
+                        playerList[1]->hit(this_power.damage);
+                        enviar = "Damage applied to player.";
+                    }
+                    else
+                        enviar = "Invalid target.";
+            else //Not a player name, maybe target is an effect name
+                if (mapa.removeMapEffect(std::stoi(param3), std::stoi(param4), param1))
+                    if (this_power.kind == AbilityKind::AREA)
+                    {
+                        mapa.removeMapEffect(std::stoi(param3), std::stoi(param4));
+                        enviar = "All effects erased at position.";
+                    }
+                    else //playerList[player_i]->getPowerKind() == AbilityKind::PLAYER
+                        enviar = "Effect erased at position.";
+            else //Not a player or effect name, maybe is empty
+                if (param1 == "" && this_power.kind == AbilityKind::AREA)
+                {
+                    enviar = "Effect ";
+                    if (mapa.findMapEffect(std::stoi(param3), std::stoi(param4), std::string(this_power.name)))
+                        enviar += "already ";
+                    else
+                        mapa.setMapEffect(std::stoi(param3), std::stoi(param4), this_power);
+                    enviar += "applied at position.";
+                }
+                else //Not a player or effect or empty name
+                    enviar = "Invalid target.";
+        }
+        else
+            enviar = "Invalid power.";
     }
 
     //Move o seu personagem para as coordenadas x e y determinadas
@@ -280,10 +352,9 @@ void PlayerMove(int player_i)
             if (mapa.checkMapEffect(std::stoi(param1), std::stoi(param2)))
             {
                 enviar += " However, there was an effect in the area. You suffered damage.";
-                s = mapa.getMapEffect(std::stoi(param1), std::stoi(param2)).begin();
-                e = mapa.getMapEffect(std::stoi(param1), std::stoi(param2)).end();
-                for (; s != e; s++)
-                    playerList[player_i]->hit(s->damage);
+                effectList = mapa.getMapEffect(std::stoi(param1), std::stoi(param2));
+                for (it = effectList.begin(); it != effectList.end(); it++)
+                    playerList[player_i]->hit(it->damage);
             }
         }
     }
@@ -306,7 +377,7 @@ void PlayerMove(int player_i)
     //Recebe informações de um jogador da mesa
     else if (string_equal(receber, "OLHAR"))
     {
-        param1 = recebido.substr(recebido.find('\"') + 1, recebido.rfind('\"') - (recebido.find('\"') + 1));
+        //param1 = recebido.substr(recebido.find('\"') + 1, recebido.rfind('\"') - (recebido.find('\"') + 1));
 
         if (playerSet[!player_i])
             enviar = playerList[!player_i]->getInfo();
