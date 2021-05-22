@@ -55,7 +55,7 @@ private:
 public:
     Player(char* name,  uint16_t hp, uint16_t defense, char* names[], int16_t damage[5], AbilityKind kind);
     bool setPower(char* name, int index, int16_t damage, AbilityKind kind);
-    Abilities getPower(int index, bool* flag);
+    Abilities getPower(int index);
     AbilityKind getPowerKind(int index);
     void hit(int16_t damage);
     void setGodMode();
@@ -66,6 +66,7 @@ public:
     bool isALIVE();
     const char* getInfo();
     const char* getName();
+    uint16_t getHP();
     void start();
 };
 

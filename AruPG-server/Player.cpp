@@ -25,12 +25,8 @@ bool Player::setPower(char* name, int index, int16_t damage, AbilityKind kind)
 	return true;
 }
 
-Abilities Player::getPower(int index, bool *flag)
+Abilities Player::getPower(int index)
 {
-	if (index < 0 || index >= 5)
-		*flag = false;
-	else
-		*flag = true;
 	return this->power[index];
 }
 
@@ -41,7 +37,7 @@ AbilityKind Player::getPowerKind(int index)
 
 void Player::hit(int16_t damage)
 {
-	if (this->status != PlayerStatus::GOD)
+	if (this->status == PlayerStatus::ALIVE)
 		if (damage >= this->defense)
 			if (damage - this->defense >= this->hp)
 			{
@@ -106,6 +102,11 @@ const char* Player::getInfo()
 const char* Player::getName()
 {
 	return this->name;
+}
+
+uint16_t Player::getHP()
+{
+	return this->hp;
 }
 
 void Player::start()
