@@ -14,15 +14,12 @@ Player::Player(char* name, uint16_t hp, uint16_t defense, char* names[], int16_t
 	setInfo();
 }
 
-bool Player::setPower(char* name, int index, int16_t damage, AbilityKind kind)
+void Player::setPower(char* name, int index, int16_t damage, AbilityKind kind)
 {
-	if (index < 0 || index >= 5)
-		return false;
 	strncpy_s(this->power[index].name, name, strlen(name));
 	this->power[index].damage = damage;
 	this->power[index].kind = kind;
 	//this->power[index].animation = image_anim;
-	return true;
 }
 
 Abilities Player::getPower(int index)
@@ -88,10 +85,12 @@ void Player::setInfo()
 	std::string temp;
 	temp = this->name;
 	this->info = "Nome: " + temp;
-	temp = std::to_string(this->hp);
-	this->info = "\nHP: " + temp;
-	temp = std::to_string(this->points);
-	this->info += "\nPontos: " + temp;
+	//temp = std::to_string(this->hp);
+	this->info = "\nHP: " + std::to_string(this->hp);
+	//temp = std::to_string(this->points);
+	this->info += "\nPontos: " + std::to_string(this->points);
+	//temp = std::to_string(this->points);
+	this->info += "\nPosição: " + std::to_string(this->pos_x) + ',' + std::to_string(this->pos_y);
 }
 
 const char* Player::getInfo()

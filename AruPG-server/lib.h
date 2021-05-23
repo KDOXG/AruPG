@@ -4,6 +4,8 @@
 #include <string>
 #include <thread>
 #include <atomic>
+#include <mutex>
+#include <condition_variable>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
@@ -54,7 +56,7 @@ private:
     void setInfo();
 public:
     Player(char* name,  uint16_t hp, uint16_t defense, char* names[], int16_t damage[5], AbilityKind kind);
-    bool setPower(char* name, int index, int16_t damage, AbilityKind kind);
+    void setPower(char* name, int index, int16_t damage, AbilityKind kind);
     Abilities getPower(int index);
     AbilityKind getPowerKind(int index);
     void hit(int16_t damage);
@@ -96,3 +98,5 @@ public:
 
 void MainGame(uint16_t PORT1, uint16_t PORT2);
 void PlayerMove(int player_i);
+
+void PlayerBehavior(uint16_t PORT);

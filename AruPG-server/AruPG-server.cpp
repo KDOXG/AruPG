@@ -6,6 +6,7 @@
 
 Player* playerList[2];
 bool playerSet[2] = { false };
+bool playerNotInit[2] = { true };
 std::string playerMessage[2];
 std::string playerLog;
 
@@ -27,6 +28,7 @@ int main(int argc, char* argv[])
         std::cout << "Failed. Error Code : " << WSAGetLastError();
         return 1;
     }
+
     // For Server Instance
     SOCKET ServerMain, ConnectionWithClient;
     sockaddr_in socketInfo, socketClient;
@@ -34,8 +36,9 @@ int main(int argc, char* argv[])
 
     // List of Ports
     std::vector<uint16_t> PORTS;
-    PORTS.push_back(6000);
-    PORTS.push_back(7000);
+    PORTS.push_back(10000);
+    PORTS.push_back(10001);
+    PORTS.push_back(10002);
     
     // Instancing the server socket
     ServerMain = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -64,14 +67,14 @@ int main(int argc, char* argv[])
         //ConnectionWithClient = accept(ServerMain, (sockaddr*)&socketClient, &clientSize);
         std::cout << "Connection Accepted! " << 2-count << " player remains...\n";
 
-        message = std::to_string(PORTS[(int64_t)count-1]);
+        message = std::to_string(PORTS[(int)count]);
         
         send(ConnectionWithClient, message.c_str(), message.size(), 0);
     }
-
+    
     closesocket(ServerMain);
 
-    MainGame(PORTS[0], PORTS[1]);
+    MainGame(PORTS[1], PORTS[2]);
     
     WSACleanup();
     
@@ -125,10 +128,10 @@ void MainGame(uint16_t PORT1, uint16_t PORT2)
         if (playerSet[0])
         {
             //MAP
-            enviar = "MAP Player 1: ";
+            enviar = "MAP /Player 1: ";
             enviar += playerSet[0] ? '\n' + playerList[0]->getInfo() : "Disconnected.";
-            enviar += "\nPlayer2: ";
-            enviar += playerSet[1] ? '\n' + playerList[1]->getInfo() : "Disconnected.";
+            enviar += "\nPlayer 2: ";
+            enviar += playerSet[1] ? '\n' + playerList[1]->getInfo() + '/' : "Disconnected./";
             send(connection1, enviar.c_str(), enviar.size(), 0);
 
             //MSG
@@ -156,7 +159,7 @@ void MainGame(uint16_t PORT1, uint16_t PORT2)
             PlayerMove(1);
             send(connection2, enviar.c_str(), enviar.size(), 0);
         }
-        if (!(playerSet[0] || playerSet[1]))
+        if (!(playerSet[0] || playerSet[1]) && !(playerNotInit[0] || playerNotInit[1]))
             break;
         
         do end_clk = clock(); while ((float)(end_clk - clk) / CLOCKS_PER_SEC < CYCLE_SIZE);
@@ -204,7 +207,10 @@ void PlayerMove(int player_i)
             playerSet[player_i] = false;
         }
         else
+        {
             playerLog += std::to_string(player_i);
+            playerNotInit[player_i] = false;
+        }
         playerLog += " disconnected./";
         return;
     }
@@ -237,6 +243,7 @@ void PlayerMove(int player_i)
                                     AbilityKind::PLAYER
                               );
         playerSet[player_i] = true;
+        playerNotInit[player_i] = false;
         mapa.playerMove(0, 0, 0, 0, playerList[player_i]);
 
         for (int i = 0; i < 5; i++) free(blank_names[i]);
@@ -256,13 +263,13 @@ void PlayerMove(int player_i)
         param4 = recebido;
         temp_malloc = _strdup(param1.c_str());
 
-        if (playerList[player_i]->setPower(temp_malloc, stol(param2) - 1,
-            (int16_t)stoul(param3), 
-            stol(param2) ? AbilityKind::AREA : AbilityKind::PLAYER
-            ))
-            enviar = "Magic set!";
-        else
-            enviar = "Couldn't create magic.";
+        playerList[player_i]->setPower(
+            temp_malloc,
+            stoi(param2) - 1,
+            (int16_t)stoul(param3),
+            stoi(param2) ? AbilityKind::AREA : AbilityKind::PLAYER
+        );
+        enviar = "Magic set!";
         free(temp_malloc);
     }
 
