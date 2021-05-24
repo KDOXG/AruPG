@@ -1,1 +1,3 @@
-RPG de mesa multi-jogador.
+#AruPG
+RPG de mesa de dois jogadores.
+
