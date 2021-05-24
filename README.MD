@@ -1,7 +1,7 @@
 # AruPG
 ##### RPG de mesa de dois jogadores.
 
-[Acessar relatório (necessita @inf](https://docs.google.com/document/d/1UpyvMn2EG-AOG-cTgMatSTgbBfmJMrUf_M7QdMUVNrA/edit?usp=sharing)
+[Acessar relatório (necessita @inf)](https://docs.google.com/document/d/1UpyvMn2EG-AOG-cTgMatSTgbBfmJMrUf_M7QdMUVNrA/edit?usp=sharing)
 
 # Como usar
 
