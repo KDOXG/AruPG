@@ -90,7 +90,7 @@ void MainGame(uint16_t PORT1, uint16_t PORT2)
     sockaddr_in socketInfo1, socketClient1;
     sockaddr_in socketInfo2, socketClient2;
     int clientSize = sizeof(sockaddr_in);
-    int recv_size = 0;
+    int recv1, recv2 = 0;
 
     server1 = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     socketInfo1.sin_addr.s_addr = inet_addr("192.168.100.34");
@@ -149,8 +149,8 @@ void MainGame(uint16_t PORT1, uint16_t PORT2)
             send(connection1, enviar.c_str(), enviar.size(), 0);
             playerMessage[0] = "";
 
-            recv_size = recv(connection1, receber, 2000, 0);
-            if (recv_size != 0)
+            recv1 = recv(connection1, receber, 2000, 0);
+            if (recv1 != 0)
                 PlayerMove(0);
             else
                 playerSet[0] = false;
@@ -168,14 +168,14 @@ void MainGame(uint16_t PORT1, uint16_t PORT2)
             send(connection2, enviar.c_str(), enviar.size(), 0);
             playerMessage[1] = "";
 
-            recv_size = recv(connection2, receber, 2000, 0);
-            if (recv_size != 0)
+            recv2 = recv(connection2, receber, 2000, 0);
+            if (recv2 != 0)
                 PlayerMove(1);
             else
                 playerSet[1] = false;
             //send(connection2, enviar.c_str(), enviar.size(), 0);
         }
-        if (recv_size == 0 || !(playerSet[0] || playerSet[1]) && !(playerNotInit[0] || playerNotInit[1]))
+        if (!(playerSet[0] || playerSet[1]) && !(playerNotInit[0] || playerNotInit[1]))
             break;
         
         std::this_thread::sleep_for(std::chrono::seconds(2));
