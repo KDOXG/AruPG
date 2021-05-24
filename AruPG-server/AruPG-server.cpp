@@ -9,6 +9,7 @@ bool playerSet[2] = { false };
 bool playerNotInit[2] = { true };
 std::string playerMessage[2];
 std::string playerLog;
+std::string consolePrint;
 
 Map mapa;
 
@@ -89,6 +90,7 @@ void MainGame(uint16_t PORT1, uint16_t PORT2)
     sockaddr_in socketInfo1, socketClient1;
     sockaddr_in socketInfo2, socketClient2;
     int clientSize = sizeof(sockaddr_in);
+    int recv_size = 0;
 
     server1 = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     socketInfo1.sin_addr.s_addr = inet_addr("192.168.100.34");
@@ -147,8 +149,11 @@ void MainGame(uint16_t PORT1, uint16_t PORT2)
             send(connection1, enviar.c_str(), enviar.size(), 0);
             playerMessage[0] = "";
 
-            recv(connection1, receber, 2000, 0);
-            PlayerMove(0);
+            recv_size = recv(connection1, receber, 2000, 0);
+            if (recv_size != 0)
+                PlayerMove(0);
+            else
+                playerSet[0] = false;
             //send(connection1, enviar.c_str(), enviar.size(), 0);
         }
 
@@ -163,19 +168,20 @@ void MainGame(uint16_t PORT1, uint16_t PORT2)
             send(connection2, enviar.c_str(), enviar.size(), 0);
             playerMessage[1] = "";
 
-            recv(connection2, receber, 2000, 0);
-            PlayerMove(1);
+            recv_size = recv(connection2, receber, 2000, 0);
+            if (recv_size != 0)
+                PlayerMove(1);
+            else
+                playerSet[1] = false;
             //send(connection2, enviar.c_str(), enviar.size(), 0);
         }
-        if (!(playerSet[0] || playerSet[1]) && !(playerNotInit[0] || playerNotInit[1]))
+        if (recv_size == 0 || !(playerSet[0] || playerSet[1]) && !(playerNotInit[0] || playerNotInit[1]))
             break;
         
         std::this_thread::sleep_for(std::chrono::seconds(2));
     }
 
     enviar = "Game over.";
-    send(connection1, enviar.c_str(), enviar.size(), 0);
-    send(connection2, enviar.c_str(), enviar.size(), 0);
     closesocket(server1);
     closesocket(server2);
     WSACleanup();
@@ -257,7 +263,7 @@ void PlayerMove(int player_i)
 
         for (int i = 0; i < 5; i++) free(blank_names[i]);
 
-        enviar = "Done!";
+        consolePrint = "Player " + std::to_string(player_i) + " initialized.\n";
     }
 
     //Cria uma abilidade para o personagem, com nome, dano e o slot (até 5) que irá ocupar
@@ -278,7 +284,7 @@ void PlayerMove(int player_i)
             (int16_t)stoul(param3),
             stoi(param2) ? AbilityKind::AREA : AbilityKind::PLAYER
         );
-        enviar = "Magic set!";
+        consolePrint = "Magic for player " + std::to_string(player_i) + " set!";
         free(temp_malloc);
     }
 
@@ -324,7 +330,7 @@ void PlayerMove(int player_i)
                         + " take " + std::to_string(temp_hp - playerList[1]->getHP()) + "of damage";
                 }
                 playerLog += '/';
-                enviar = "Damage applied to all players in position.";
+                consolePrint = "Damage applied to all players in position " + param3 + ',' + param4 + '.';
             }
             else //this_power.kind == AbilityKind::PLAYER
                 if (mapa.findPlayer(std::stoi(param3), std::stoi(param4), playerList[0]))
@@ -332,17 +338,17 @@ void PlayerMove(int player_i)
                     playerList[0]->hit(this_power.damage);
                     playerLog = "LOG /" + std::string(playerList[player_i]->getName())
                         + " hit " + std::string(playerList[0]->getName()) + " with " + this_power.name;
-                    enviar = "Damage applied to player.";
+                    consolePrint = "Damage applied to player.";
                 }
                 else if (mapa.findPlayer(std::stoi(param3), std::stoi(param4), playerList[1]))
                 {
                     playerList[1]->hit(this_power.damage);
                     playerLog = "LOG /" + std::string(playerList[player_i]->getName())
                         + " hit " + std::string(playerList[1]->getName()) + " with " + this_power.name;
-                    enviar = "Damage applied to player.";
+                    consolePrint = "Damage applied to player.";
                 }
                 else
-                    enviar = "Invalid target.";
+                    consolePrint = "Invalid target.";
 
         }
         else //Not a player name, maybe target is an effect name
@@ -352,30 +358,30 @@ void PlayerMove(int player_i)
                     mapa.removeMapEffect(std::stoi(param3), std::stoi(param4));
                     playerLog = "LOG /" + std::string(playerList[player_i]->getName())
                         + " hit all effects at " + param3 + ',' + param4 + ", all effects are erased/";
-                    enviar = "All effects erased at position.";
+                    consolePrint = "All effects erased at position " + param3 + ',' + param4 + '.';
                 }
                 else //playerList[player_i]->getPowerKind() == AbilityKind::PLAYER
                 {
                     playerLog = "LOG /" + std::string(playerList[player_i]->getName())
                         + " hit effect " + param1 + ", the effect is erased/";
-                    enviar = "Effect erased at position.";
+                    consolePrint = "Effect erased at position " + param3 + ',' + param4 + '.';
                 }
         else //Not a player or effect name, maybe is empty
             if (param1 == "" && this_power.kind == AbilityKind::AREA)
             {
-                enviar = "Effect ";
+                consolePrint = "Effect ";
                 if (mapa.findMapEffect(std::stoi(param3), std::stoi(param4), std::string(this_power.name)))
-                    enviar += "already ";
+                    consolePrint += "already ";
                 else
                 {
                     playerLog = "LOG /" + std::string(playerList[player_i]->getName()) 
                         + " cast effect " + this_power.name + " at " + param3 + ',' + param4 + '/';
                     mapa.setMapEffect(std::stoi(param3), std::stoi(param4), this_power);
                 }
-                enviar += "applied at position.";
+                consolePrint += "applied at position " + param3 + ',' + param4 + '.';
             }
             else //Not a player or effect or empty name
-                enviar = "Invalid target or power.";
+                consolePrint = "Invalid target or power.";
     }
 
     //Move o seu personagem para as coordenadas x e y determinadas
@@ -387,7 +393,7 @@ void PlayerMove(int player_i)
         param2 = recebido;
 
         if (std::stoi(param1) < 0 || std::stoi(param1) >= 100 || std::stoi(param2) < 0 || std::stoi(param2) >= 100)
-            enviar = "Invalid position.";
+            consolePrint = "Invalid position.";
         else
         {
             mapa.playerMove(
@@ -397,10 +403,10 @@ void PlayerMove(int player_i)
                 std::stoi(param2),
                 playerList[player_i]
             );
-            enviar = "New position set.";
+            consolePrint = "New position for player " + std::to_string(player_i) + " set.";
             if (mapa.checkMapEffect(std::stoi(param1), std::stoi(param2)))
             {
-                enviar += " However, there was an effect in the area. You suffered damage.";
+                consolePrint += " However, there was an effect in the area. Player " + std::to_string(player_i) + " suffered damage.";
                 effectList = mapa.getMapEffect(std::stoi(param1), std::stoi(param2));
                 for (it = effectList.begin(); it != effectList.end(); it++)
                     playerList[player_i]->hit(it->damage);
@@ -417,10 +423,10 @@ void PlayerMove(int player_i)
         {
             playerMessage[!player_i] = "MSG /";
             playerMessage[!player_i] += playerList[!player_i]->getName() + ':' + param1 + '/';
-            enviar = "Message sent.";
+            consolePrint = "Message from player " + std::to_string(player_i) + " to player " + std::to_string(!player_i) + " sent.";
         }
         else
-            enviar = "Player not found.";
+            consolePrint = "Player " + std::to_string(!player_i) + " not found.";
     }
 
     //Recebe informações de um jogador da mesa
@@ -429,9 +435,12 @@ void PlayerMove(int player_i)
         //param1 = recebido.substr(recebido.find('\"') + 1, recebido.rfind('\"') - (recebido.find('\"') + 1));
 
         if (playerSet[!player_i])
-            enviar = playerList[!player_i]->getInfo();
+        {
+            enviar = "LOO /";
+            enviar += playerList[!player_i]->getInfo() + '/';
+        }
         else
-            enviar = "Player not found.";
+            consolePrint = "Player not found.";
     }
 
     //Ativa o modo imortal ao seu personagem
@@ -440,10 +449,10 @@ void PlayerMove(int player_i)
         if (playerSet[player_i])
         {
             playerList[player_i]->setGodMode();
-            enviar = "God Mode activated.";
+            consolePrint = "God Mode for player " + std::to_string(player_i) + " activated.";
         }
         else
-            enviar = "Not happening.";
+            consolePrint = "Not happening.\n";
     }
     else printf("Something something went wrong with this player lol.\n\n");
 }
