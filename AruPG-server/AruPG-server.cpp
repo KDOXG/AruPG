@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
     ServerMain = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
     // Initializing the server params
-    socketInfo.sin_addr.s_addr = INADDR_ANY;
+    socketInfo.sin_addr.s_addr = inet_addr("192.168.100.34");
     socketInfo.sin_family = AF_INET;
     socketInfo.sin_port = htons(PORTS[0]);
 
@@ -61,22 +61,22 @@ int main(int argc, char* argv[])
     listen(ServerMain, SOMAXCONN);
 
     // Server Main Loop
-    ConnectionWithClient = accept(ServerMain, (sockaddr*)&socketClient, &clientSize);
+    // ConnectionWithClient = accept(ServerMain, (sockaddr*)&socketClient, &clientSize);
     for (int count=1; count <= 2; count++)
     {
-        //ConnectionWithClient = accept(ServerMain, (sockaddr*)&socketClient, &clientSize);
+        ConnectionWithClient = accept(ServerMain, (sockaddr*)&socketClient, &clientSize);
         std::cout << "Connection Accepted! " << 2-count << " player remains...\n";
 
-        message = std::to_string(PORTS[(int)count]);
+        message = std::to_string(PORTS[count]);
         
         send(ConnectionWithClient, message.c_str(), message.size(), 0);
     }
     
     closesocket(ServerMain);
+    WSACleanup();
 
     MainGame(PORTS[1], PORTS[2]);
     
-    WSACleanup();
     
     return 0;
 }
@@ -91,9 +91,16 @@ void MainGame(uint16_t PORT1, uint16_t PORT2)
     int clientSize = sizeof(sockaddr_in);
 
     server1 = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    socketInfo1.sin_addr.s_addr = INADDR_ANY;
+    socketInfo1.sin_addr.s_addr = inet_addr("192.168.100.34");
     socketInfo1.sin_family = AF_INET;
     socketInfo1.sin_port = htons(PORT1);
+    
+    WSADATA wsa;
+    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+    {
+        std::cout << "Failed. Error Code : " << WSAGetLastError();
+        return;
+    }
 
     if (bind(server1, (sockaddr*)&socketInfo1, sizeof(socketInfo1)) == SOCKET_ERROR)
     {
@@ -103,7 +110,7 @@ void MainGame(uint16_t PORT1, uint16_t PORT2)
     listen(server1, SOMAXCONN);
 
     server2 = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    socketInfo2.sin_addr.s_addr = INADDR_ANY;
+    socketInfo2.sin_addr.s_addr = inet_addr("192.168.100.34");
     socketInfo2.sin_family = AF_INET;
     socketInfo2.sin_port = htons(PORT2);
 
@@ -117,6 +124,7 @@ void MainGame(uint16_t PORT1, uint16_t PORT2)
     //Main loop
     connection1 = accept(server1, (sockaddr*)&socketClient1, &clientSize);
     connection2 = accept(server2, (sockaddr*)&socketClient2, &clientSize);
+    std::cout << "this\n";
     while (true)
     {
         //LOG
@@ -141,7 +149,7 @@ void MainGame(uint16_t PORT1, uint16_t PORT2)
 
             recv(connection1, receber, 2000, 0);
             PlayerMove(0);
-            send(connection1, enviar.c_str(), enviar.size(), 0);
+            //send(connection1, enviar.c_str(), enviar.size(), 0);
         }
 
         if (playerSet[1])
@@ -157,7 +165,7 @@ void MainGame(uint16_t PORT1, uint16_t PORT2)
 
             recv(connection2, receber, 2000, 0);
             PlayerMove(1);
-            send(connection2, enviar.c_str(), enviar.size(), 0);
+            //send(connection2, enviar.c_str(), enviar.size(), 0);
         }
         if (!(playerSet[0] || playerSet[1]) && !(playerNotInit[0] || playerNotInit[1]))
             break;
@@ -170,6 +178,7 @@ void MainGame(uint16_t PORT1, uint16_t PORT2)
     send(connection2, enviar.c_str(), enviar.size(), 0);
     closesocket(server1);
     closesocket(server2);
+    WSACleanup();
 }
 
 void PlayerMove(int player_i)

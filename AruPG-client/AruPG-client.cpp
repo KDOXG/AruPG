@@ -1,7 +1,7 @@
 // AruPG-client.cpp : Este arquivo contém a função 'main'. A execução do programa começa e termina ali.
 //
 
-#include "C:\Users\KDOXG\source\repos\AruPG-server\AruPG-server\lib.h"
+#include "lib.h"
 /*
 	Create a TCP socket
 */
@@ -14,7 +14,7 @@ std::string Map, Log, Msg, Default;
 std::string printMap, printLog, printMsg, printDefault;
 char Player_Port[200], receive[2000];
 
-std::atomic<bool> Ready, readyInput = false, readyDefault = false;
+std::atomic<bool> Ready = true, readyInput = false, readyDefault = false;
 std::mutex mInput, mMap, mLog, mMsg, mDefault;
 std::condition_variable cvInput;
 
@@ -28,7 +28,7 @@ bool isNumber(const std::string& str)
 
 bool isNegative(const std::string& str)
 {
-	return str[0] == '-' && isNumber(str.substr(1,str.size())) ? true : false;
+	return str[0] == '-' && isNumber(str.substr(1, str.size())) ? true : false;
 }
 
 int main(int argc, char* argv[])
@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
 	std::string param;
 
 	// For Client Instance
-	SOCKET Client_GetPort;
+	SOCKET Client_GetPort, MainClient;
 	sockaddr_in serverInfo;
 	int recv_size;
 	uint16_t Main_PORT;
@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
 	printf("Socket created.\n");
 
 	//Initializing the server params for connection
-	serverInfo.sin_addr.s_addr = INADDR_ANY;
+	serverInfo.sin_addr.s_addr = inet_addr("192.168.100.34");
 	serverInfo.sin_family = AF_INET;
 	serverInfo.sin_port = htons(10000);
 
@@ -101,7 +101,20 @@ int main(int argc, char* argv[])
 
 	closesocket(Client_GetPort);
 
-	std::thread PlayerConnection(PlayerBehavior,Main_PORT);
+	if ((MainClient = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == INVALID_SOCKET)
+	{
+		printf("Could not create socket : %d", WSAGetLastError());
+	}
+
+	serverInfo.sin_port = htons(Main_PORT);
+
+	//std::thread PlayerConnection(PlayerBehavior, Main_PORT);
+
+	if (connect(MainClient, (struct sockaddr*)&serverInfo, sizeof(serverInfo)) < 0)
+	{
+		puts("connect error");
+		return 1;
+	}
 
 	while (Ready.load())
 	{
@@ -136,7 +149,7 @@ int main(int argc, char* argv[])
 			playerInput_pass = playerInput.c_str();
 			mInput.unlock();
 			readyInput.store(true);
-		break;
+			break;
 
 		case '1':	//Criar uma magia para o personagem
 			playerInput = "MAGIA \"<nome>\" <posicao> <dano> <tipo>";
@@ -173,7 +186,7 @@ int main(int argc, char* argv[])
 			playerInput_pass = playerInput.c_str();
 			mInput.unlock();
 			readyInput.store(true);
-		break;
+			break;
 
 		case '2':	//Atacar algum alvo da mesa
 			playerInput = "ATACA \"<nome_do_alvo>\" <ataque> <coordenada_x> <coordenada_y>";
@@ -210,7 +223,7 @@ int main(int argc, char* argv[])
 			playerInput_pass = playerInput.c_str();
 			mInput.unlock();
 			readyInput.store(true);
-		break;
+			break;
 
 		case '3':	//Mover o personagem para uma posição
 			playerInput = "MOVER <coordenada_x> <coordenada_y>";
@@ -233,7 +246,7 @@ int main(int argc, char* argv[])
 			playerInput_pass = playerInput.c_str();
 			mInput.unlock();
 			readyInput.store(true);
-		break;
+			break;
 
 		case '4':	//Falar com outro jogador
 
@@ -250,7 +263,7 @@ int main(int argc, char* argv[])
 			playerInput_pass = playerInput.c_str();
 			mInput.unlock();
 			readyInput.store(true);
-		break;
+			break;
 
 		case '5':	//Verificar os status de outro personagem
 			playerInput = "OLHAR";
@@ -259,7 +272,7 @@ int main(int argc, char* argv[])
 			playerInput_pass = playerInput.c_str();
 			mInput.unlock();
 			readyInput.store(true);
-		break;
+			break;
 
 		case '6':	//Ativar God Mode
 			playerInput = "GODMO";
@@ -268,38 +281,38 @@ int main(int argc, char* argv[])
 			playerInput_pass = playerInput.c_str();
 			mInput.unlock();
 			readyInput.store(true);
-		break;
+			break;
 
 		case '7':	//Sair do jogo
 			playerInput = "QUIT";
-			
+
 			Ready.store(false);
-		break;
+			break;
 
 		case '8':	//Imprimir informações dos personagens
 			mMap.lock();
 			printMap = Map.c_str();
 			mMap.unlock();
 			std::cout << printMap << '\n';
-		break;
+			break;
 
 		case '9':	//Imprimir uma mensagem recebida
 			mMsg.lock();
 			printMsg = Msg.c_str();
 			mMsg.unlock();
 			std::cout << printMsg << '\n';
-		break;
+			break;
 
 		case 'a':	//Imprimir o Log
 			mLog.lock();
 			printLog = Log.c_str();
 			mLog.unlock();
 			std::cout << printLog << '\n';
-		break;
+			break;
 
 		default:
 			continue;
-		break;
+			break;
 		}
 
 		std::this_thread::sleep_for(std::chrono::seconds(4));
@@ -316,7 +329,7 @@ int main(int argc, char* argv[])
 
 	}
 
-	PlayerConnection.join();
+	//PlayerConnection.join();
 	WSACleanup();
 	return 0;
 }
@@ -340,11 +353,8 @@ void PlayerBehavior(uint16_t PORT)
 	serverInfo.sin_port = htons(PORT);
 
 	//Connect to remote server
-	if (connect(MainClient, (struct sockaddr*)&serverInfo, sizeof(serverInfo)) < 0)
-	{
-		puts("connect error");
-		return;
-	}
+	while (connect(MainClient, (struct sockaddr*)&serverInfo, sizeof(serverInfo)) < 0);
+	std::cout << "this\n";
 
 	while (true)
 	{
@@ -376,10 +386,12 @@ void PlayerBehavior(uint16_t PORT)
 		}
 		else
 		{
+			/*
 			mDefault.lock();
 			Default = resposta.c_str();
 			mDefault.unlock();
 			readyDefault.store(true);
+			*/
 		}
 
 		if (readyInput.load())
