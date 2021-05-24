@@ -1,7 +1,7 @@
 // AruPG-client.cpp : Este arquivo contém a função 'main'. A execução do programa começa e termina ali.
 //
 
-#include "C:\Users\KDOXG\source\repos\AruPG-server\AruPG-server\lib.h"
+#include "lib.h"
 /*
 	Create a TCP socket
 */
