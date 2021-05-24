@@ -14,9 +14,7 @@ std::string Map, Log, Msg, Default;
 std::string printMap, printLog, printMsg, printDefault;
 char Player_Port[200], receive[2000];
 
-bool Ready = true;
-
-std::atomic<bool> readyInput = false, readyDefault = false;
+std::atomic<bool> Ready, readyInput = false, readyDefault = false;
 std::mutex mInput, mMap, mLog, mMsg, mDefault;
 std::condition_variable cvInput;
 
@@ -105,7 +103,7 @@ int main(int argc, char* argv[])
 
 	std::thread PlayerConnection(PlayerBehavior,Main_PORT);
 
-	while (Ready)
+	while (Ready.load())
 	{
 		std::cout << "Digite: ";
 		std::cin >> choice;
@@ -135,7 +133,7 @@ int main(int argc, char* argv[])
 			playerInput.replace(playerInput.find("<defesa>"), 8, param);
 
 			mInput.lock();
-			playerInput_pass = playerInput;
+			playerInput_pass = playerInput.c_str();
 			mInput.unlock();
 			readyInput.store(true);
 		break;
@@ -172,7 +170,7 @@ int main(int argc, char* argv[])
 			playerInput.replace(playerInput.find("<tipo>"), 6, param);
 
 			mInput.lock();
-			playerInput_pass = playerInput;
+			playerInput_pass = playerInput.c_str();
 			mInput.unlock();
 			readyInput.store(true);
 		break;
@@ -209,7 +207,7 @@ int main(int argc, char* argv[])
 			playerInput.replace(playerInput.find("<coordenada_y>"), 14, param);
 
 			mInput.lock();
-			playerInput_pass = playerInput;
+			playerInput_pass = playerInput.c_str();
 			mInput.unlock();
 			readyInput.store(true);
 		break;
@@ -232,7 +230,7 @@ int main(int argc, char* argv[])
 			playerInput.replace(playerInput.find("<coordenada_y>"), 14, param);
 
 			mInput.lock();
-			playerInput_pass = playerInput;
+			playerInput_pass = playerInput.c_str();
 			mInput.unlock();
 			readyInput.store(true);
 		break;
@@ -249,7 +247,7 @@ int main(int argc, char* argv[])
 			playerInput.replace(playerInput.find("<mensagem>"), 10, param);
 
 			mInput.lock();
-			playerInput_pass = playerInput;
+			playerInput_pass = playerInput.c_str();
 			mInput.unlock();
 			readyInput.store(true);
 		break;
@@ -258,7 +256,7 @@ int main(int argc, char* argv[])
 			playerInput = "OLHAR";
 
 			mInput.lock();
-			playerInput_pass = playerInput;
+			playerInput_pass = playerInput.c_str();
 			mInput.unlock();
 			readyInput.store(true);
 		break;
@@ -267,7 +265,7 @@ int main(int argc, char* argv[])
 			playerInput = "GODMO";
 
 			mInput.lock();
-			playerInput_pass = playerInput;
+			playerInput_pass = playerInput.c_str();
 			mInput.unlock();
 			readyInput.store(true);
 		break;
@@ -275,26 +273,26 @@ int main(int argc, char* argv[])
 		case '7':	//Sair do jogo
 			playerInput = "QUIT";
 			
-			Ready = false;
+			Ready.store(false);
 		break;
 
 		case '8':	//Imprimir informações dos personagens
 			mMap.lock();
-			printMap = Map;
+			printMap = Map.c_str();
 			mMap.unlock();
 			std::cout << printMap << '\n';
 		break;
 
 		case '9':	//Imprimir uma mensagem recebida
 			mMsg.lock();
-			printMsg = Msg;
+			printMsg = Msg.c_str();
 			mMsg.unlock();
 			std::cout << printMsg << '\n';
 		break;
 
 		case 'a':	//Imprimir o Log
 			mLog.lock();
-			printLog = Log;
+			printLog = Log.c_str();
 			mLog.unlock();
 			std::cout << printLog << '\n';
 		break;
@@ -304,18 +302,17 @@ int main(int argc, char* argv[])
 		break;
 		}
 
+		std::this_thread::sleep_for(std::chrono::seconds(4));
+
 		if (readyDefault.load())
 		{
 			mDefault.lock();
-			printDefault = Default;
+			printDefault = Default.c_str();
 			mDefault.unlock();
 			readyDefault.store(false);
 
 			std::cout << printDefault << '\n';
 		}
-
-		std::this_thread::sleep_for(std::chrono::seconds(4));
-
 
 	}
 
@@ -358,19 +355,19 @@ void PlayerBehavior(uint16_t PORT)
 		if (string_equal(receive, "MAP"))
 		{
 			mMap.lock();
-			Map = resposta.substr(resposta.find('/'), resposta.rfind('/'));
+			Map = resposta.substr(resposta.find('/'), resposta.rfind('/')).c_str();
 			mMap.unlock();
 		}
 		else if (string_equal(receive, "MSG"))
 		{
 			mMsg.lock();
-			Msg = resposta.substr(resposta.find('/'), resposta.rfind('/'));
+			Msg = resposta.substr(resposta.find('/'), resposta.rfind('/')).c_str();
 			mMsg.unlock();
 		}
 		else if (string_equal(receive, "LOG"))
 		{
 			mLog.lock();
-			Log = resposta.substr(resposta.find('/'), resposta.rfind('/'));
+			Log = resposta.substr(resposta.find('/'), resposta.rfind('/')).c_str();
 			mLog.unlock();
 		}
 		else if (string_equal(receive, "NON"))
@@ -380,7 +377,7 @@ void PlayerBehavior(uint16_t PORT)
 		else
 		{
 			mDefault.lock();
-			Default = resposta;
+			Default = resposta.c_str();
 			mDefault.unlock();
 			readyDefault.store(true);
 		}
@@ -393,7 +390,10 @@ void PlayerBehavior(uint16_t PORT)
 			readyInput.store(false);
 		}
 		send(MainClient, message.c_str(), message.size(), 0);
+		if (message == "QUIT")
+			break;
 		message = "";
 	}
-	
+	closesocket(MainClient);
+
 }
