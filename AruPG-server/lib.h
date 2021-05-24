@@ -6,6 +6,7 @@
 #include <atomic>
 #include <mutex>
 #include <condition_variable>
+#include <chrono>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
@@ -15,7 +16,6 @@
 #include <conio.h>
 //#include "./SDL2/include/SDL.h"
 
-#define CYCLE_SIZE 10
 #define string_equal(s,se) !strcmp(s, se)
 
 #define PLAYER_N 2

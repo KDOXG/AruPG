@@ -13,7 +13,7 @@ std::string playerLog;
 Map mapa;
 
 std::string enviar;
-char receber[128];
+char receber[2000];
 
 int main(int argc, char* argv[])
 {
@@ -117,7 +117,7 @@ void MainGame(uint16_t PORT1, uint16_t PORT2)
     //Main loop
     connection1 = accept(server1, (sockaddr*)&socketClient1, &clientSize);
     connection2 = accept(server2, (sockaddr*)&socketClient2, &clientSize);
-    for(clock_t clk = clock(), end_clk; true; clk = clock())
+    while (true)
     {
         //LOG
         enviar = playerLog;
@@ -139,7 +139,7 @@ void MainGame(uint16_t PORT1, uint16_t PORT2)
             send(connection1, enviar.c_str(), enviar.size(), 0);
             playerMessage[0] = "";
 
-            recv(connection1, receber, 128, 0);
+            recv(connection1, receber, 2000, 0);
             PlayerMove(0);
             send(connection1, enviar.c_str(), enviar.size(), 0);
         }
@@ -155,14 +155,14 @@ void MainGame(uint16_t PORT1, uint16_t PORT2)
             send(connection2, enviar.c_str(), enviar.size(), 0);
             playerMessage[1] = "";
 
-            recv(connection2, receber, 128, 0);
+            recv(connection2, receber, 2000, 0);
             PlayerMove(1);
             send(connection2, enviar.c_str(), enviar.size(), 0);
         }
         if (!(playerSet[0] || playerSet[1]) && !(playerNotInit[0] || playerNotInit[1]))
             break;
         
-        do end_clk = clock(); while ((float)(end_clk - clk) / CLOCKS_PER_SEC < CYCLE_SIZE);
+        std::this_thread::sleep_for(std::chrono::seconds(2));
     }
 
     enviar = "Game over.";

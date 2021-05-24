@@ -8,6 +8,18 @@
 
 #pragma comment(lib,"ws2_32.lib") //Winsock Library
 
+std::string message = "", resposta;
+std::string playerInput, playerInput_pass;
+std::string Map, Log, Msg, Default;
+std::string printMap, printLog, printMsg, printDefault;
+char Player_Port[200], receive[2000];
+
+bool Ready = true;
+
+std::atomic<bool> readyInput = false, readyDefault = false;
+std::mutex mInput, mMap, mLog, mMsg, mDefault;
+std::condition_variable cvInput;
+
 bool isNumber(const std::string& str)
 {
 	for (char const& c : str) {
@@ -16,15 +28,10 @@ bool isNumber(const std::string& str)
 	return true;
 }
 
-std::string message = "", resposta, playerInput;
-char Player_Port[200], receive[2000];
-
-bool Ready = true;
-
-std::atomic<bool> readyInput = false;
-std::mutex mInput;
-std::condition_variable cvInput;
-
+bool isNegative(const std::string& str)
+{
+	return str[0] == '-' && isNumber(str.substr(1,str.size())) ? true : false;
+}
 
 int main(int argc, char* argv[])
 {
@@ -117,59 +124,186 @@ int main(int argc, char* argv[])
 			{
 				std::cout << "Digite o HP: ";
 				std::cin >> param;
-			} while (!isNumber(param) || std::stoul(param) >= UINT16_MAX);
+			} while (!isNumber(param) || isNegative(param) || std::stoul(param) >= UINT16_MAX);
 			playerInput.replace(playerInput.find("<hp>"), 4, param);
 
 			do
 			{
 				std::cout << "Digite a defesa: ";
 				std::cin >> param;
-			} while (!isNumber(param) || std::stoul(param) >= UINT16_MAX);
+			} while (!isNumber(param) || isNegative(param) || std::stoul(param) >= UINT16_MAX);
 			playerInput.replace(playerInput.find("<defesa>"), 8, param);
 
+			mInput.lock();
+			playerInput_pass = playerInput;
+			mInput.unlock();
 			readyInput.store(true);
-			break;
+		break;
+
 		case '1':	//Criar uma magia para o personagem
 			playerInput = "MAGIA \"<nome>\" <posicao> <dano> <tipo>";
-			playerInput = "MAGIA \"";
-			std::cout << "Digite o nome: ";
-			std::cin >> param;
-			playerInput += param + "\" ";
 
+			do
+			{
+				std::cout << "Digite o nome: ";
+				std::cin >> param;
+			} while (param.size() > 50);
+			playerInput.replace(playerInput.find("<nome>"), 6, param);
 
-			playerInput = "MAGIA \"<nome>\" <posicao> <dano> <tipo>";
-			playerInput = "MAGIA \"<nome>\" <posicao> <dano> <tipo>";
+			do
+			{
+				std::cout << "Digite a posição: ";
+				std::cin >> param;
+			} while (!isNumber(param) || std::stoi(param) == 0 || std::stoi(param) > 5);
+			playerInput.replace(playerInput.find("<posicao>"), 9, param);
 
+			do
+			{
+				std::cout << "Digite o dano: ";
+				std::cin >> param;
+			} while ((!isNumber(param) && !isNegative(param)) || std::stoi(param) >= INT16_MAX || std::stoi(param) <= INT16_MIN);
+			playerInput.replace(playerInput.find("<dano>"), 6, param);
+
+			do
+			{
+				std::cout << "Digite o tipo: ";
+				std::cin >> param;
+			} while (!isNumber(param) || std::stoi(param) < 0 || std::stoul(param) > 1);
+			playerInput.replace(playerInput.find("<tipo>"), 6, param);
+
+			mInput.lock();
+			playerInput_pass = playerInput;
+			mInput.unlock();
 			readyInput.store(true);
-			break;
+		break;
+
 		case '2':	//Atacar algum alvo da mesa
+			playerInput = "ATACA \"<nome_do_alvo>\" <ataque> <coordenada_x> <coordenada_y>";
 
+			do
+			{
+				std::cout << "Digite o nome: ";
+				std::cin >> param;
+			} while (param.size() > 50);
+			playerInput.replace(playerInput.find("<nome_do_alvo>"), 14, param);
+
+			do
+			{
+				std::cout << "Digite o índice do ataque: ";
+				std::cin >> param;
+			} while (!isNumber(param) || std::stoi(param) == 0 || std::stoi(param) > 5);
+			playerInput.replace(playerInput.find("<ataque>"), 8, param);
+
+			std::cout << "Digite as coordenadas da posição do alvo\n";
+			do
+			{
+				std::cout << "x: ";
+				std::cin >> param;
+			} while (!isNumber(param) || std::stoi(param) >= 100);
+			playerInput.replace(playerInput.find("<coordenada_x>"), 14, param);
+			do
+			{
+				std::cout << "y: ";
+				std::cin >> param;
+			} while (!isNumber(param) || std::stoi(param) >= 100);
+			playerInput.replace(playerInput.find("<coordenada_y>"), 14, param);
+
+			mInput.lock();
+			playerInput_pass = playerInput;
+			mInput.unlock();
 			readyInput.store(true);
-			break;
+		break;
+
 		case '3':	//Mover o personagem para uma posição
+			playerInput = "MOVER <coordenada_x> <coordenada_y>";
 
+			std::cout << "Digite as coordenadas da posição do alvo\n";
+			do
+			{
+				std::cout << "x: ";
+				std::cin >> param;
+			} while (!isNumber(param) || std::stoi(param) >= 100);
+			playerInput.replace(playerInput.find("<coordenada_x>"), 14, param);
+			do
+			{
+				std::cout << "y: ";
+				std::cin >> param;
+			} while (!isNumber(param) || std::stoi(param) >= 100);
+			playerInput.replace(playerInput.find("<coordenada_y>"), 14, param);
+
+			mInput.lock();
+			playerInput_pass = playerInput;
+			mInput.unlock();
 			readyInput.store(true);
-			break;
+		break;
+
 		case '4':	//Falar com outro jogador
 
+			playerInput = "FALAR /<mensagem>/";
+
+			do
+			{
+				std::cout << "Digite sua mensagem: ";
+				std::cin >> param;
+			} while (param.size() > 500);
+			playerInput.replace(playerInput.find("<mensagem>"), 10, param);
+
+			mInput.lock();
+			playerInput_pass = playerInput;
+			mInput.unlock();
 			readyInput.store(true);
-			break;
+		break;
+
 		case '5':	//Verificar os status de outro personagem
+			playerInput = "OLHAR";
 
+			mInput.lock();
+			playerInput_pass = playerInput;
+			mInput.unlock();
 			readyInput.store(true);
-			break;
+		break;
+
 		case '6':	//Ativar God Mode
+			playerInput = "GODMO";
 
+			mInput.lock();
+			playerInput_pass = playerInput;
+			mInput.unlock();
 			readyInput.store(true);
-			break;
+		break;
+
 		case '7':	//Sair do jogo
+			playerInput = "QUIT";
+			
+			Ready = false;
+		break;
 
-			readyInput.store(true);
+		case '8':	//Imprimir o Log
+			playerInput = "QUIT";
+
+			Ready = false;
 			break;
+
+		case '9':	//Imprimir uma mensagem recebida
+			playerInput = "QUIT";
+
+			Ready = false;
+			break;
+
+		case 'a':	//Imprimir informações dos personagens
+			playerInput = "QUIT";
+
+			Ready = false;
+			break;
+
 		default:
-
-			break;
+			continue;
+		break;
 		}
+
+		std::this_thread::sleep_for(std::chrono::seconds(4));
+
+
 	}
 
 	PlayerConnection.join();
@@ -182,6 +316,8 @@ void PlayerBehavior(uint16_t PORT)
 	SOCKET MainClient;
 	sockaddr_in serverInfo;
 	int recv_size;
+
+	int LogCount = 0;
 
 	if ((MainClient = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == INVALID_SOCKET)
 	{
@@ -208,28 +344,38 @@ void PlayerBehavior(uint16_t PORT)
 
 		if (string_equal(receive, "MAP"))
 		{
-
+			mMap.lock();
+			Map = resposta.substr(resposta.find('/'), resposta.rfind('/'));
+			mMap.unlock();
 		}
 		else if (string_equal(receive, "MSG"))
 		{
-
+			mMsg.lock();
+			Msg = resposta.substr(resposta.find('/'), resposta.rfind('/'));
+			mMsg.unlock();
 		}
 		else if (string_equal(receive, "LOG"))
 		{
-
+			mLog.lock();
+			Log = resposta.substr(resposta.find('/'), resposta.rfind('/'));
+			mLog.unlock();
 		}
 		else if (string_equal(receive, "NON"))
 		{
-
+			//does nothing
 		}
 		else
 		{
-			printf("Something something went wrong lol.");
+			mDefault.lock();
+			Default = resposta;
+			mDefault.unlock();
 		}
 
 		if (readyInput.load())
 		{
-			message = playerInput;
+			mInput.lock();
+			message = playerInput_pass.c_str();
+			mInput.unlock();
 			readyInput.store(false);
 		}
 		send(MainClient, message.c_str(), message.size(), 0);
