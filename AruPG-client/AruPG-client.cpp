@@ -119,7 +119,9 @@ int main(int argc, char* argv[])
 
 	while (Ready)
 	{
-		std::cout << "Digite: ";
+		std::cout << "0: Iniciar\n1: Criar magia\n2: Atacar alvo\n3: Mover personagem\n4: Falar com jogador\n";
+		std::cout << "5: Olhar outro jogador\n6: Ativar God Mode\n7: Sair do jogo\n";
+		std::cout << "8: Mostrar os personagens\n9: Mostrar mensagem recebida\na: Mostrar o log\nDigite : ";
 		std::cin >> choice;
 		switch (choice)
 		{
