@@ -13,7 +13,7 @@ void Map::setMapEffect(int x, int y, Abilities effect)
 bool Map::removeMapEffect(int x, int y, std::string name)
 {
 	Abilities aux;
-	int n = area[x][y].effect.size();
+	int n = (int)area[x][y].effect.size();
 	bool flag = false;
 	for (int i = 0; i < n; i++)
 	{
@@ -47,7 +47,7 @@ std::list<Abilities> Map::getMapEffect(int x, int y)
 bool Map::findMapEffect(int x, int y, std::string name)
 {
 	Abilities aux;
-	int n = area[x][y].effect.size();
+	int n = (int)area[x][y].effect.size();
 	bool flag = false;
 	for (int i = 0; i < n; i++)
 	{
@@ -63,7 +63,7 @@ bool Map::findMapEffect(int x, int y, std::string name)
 void Map::playerMove(int old_x, int old_y, int new_x, int new_y, Player* player)
 {
 	Player* aux;
-	int n = area[old_x][old_y].people.size();
+	int n = (int)area[old_x][old_y].people.size();
 	for (int i = 0; i < n; i++)
 	{
 		aux = area[old_x][old_y].people.front();
@@ -83,7 +83,7 @@ bool Map::checkPlayer(int x, int y)
 bool Map::findPlayer(int x, int y, Player* player)
 {
 	Player* aux;
-	int n = area[x][y].people.size();
+	int n = (int)area[x][y].people.size();
 	bool flag = false;
 	for (int i = 0; i < n; i++)
 	{

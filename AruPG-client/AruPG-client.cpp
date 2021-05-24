@@ -108,7 +108,7 @@ int main(int argc, char* argv[])
 	while (Ready)
 	{
 		std::cout << "Digite: ";
-		choice = getchar();
+		std::cin >> choice;
 		switch (choice)
 		{
 		case '0':	//Iniciar o jogo, criar personagem
@@ -278,27 +278,40 @@ int main(int argc, char* argv[])
 			Ready = false;
 		break;
 
-		case '8':	//Imprimir o Log
-			playerInput = "QUIT";
-
-			Ready = false;
-			break;
+		case '8':	//Imprimir informações dos personagens
+			mMap.lock();
+			printMap = Map;
+			mMap.unlock();
+			std::cout << printMap << '\n';
+		break;
 
 		case '9':	//Imprimir uma mensagem recebida
-			playerInput = "QUIT";
+			mMsg.lock();
+			printMsg = Msg;
+			mMsg.unlock();
+			std::cout << printMsg << '\n';
+		break;
 
-			Ready = false;
-			break;
-
-		case 'a':	//Imprimir informações dos personagens
-			playerInput = "QUIT";
-
-			Ready = false;
-			break;
+		case 'a':	//Imprimir o Log
+			mLog.lock();
+			printLog = Log;
+			mLog.unlock();
+			std::cout << printLog << '\n';
+		break;
 
 		default:
 			continue;
 		break;
+		}
+
+		if (readyDefault.load())
+		{
+			mDefault.lock();
+			printDefault = Default;
+			mDefault.unlock();
+			readyDefault.store(false);
+
+			std::cout << printDefault << '\n';
 		}
 
 		std::this_thread::sleep_for(std::chrono::seconds(4));
@@ -369,6 +382,7 @@ void PlayerBehavior(uint16_t PORT)
 			mDefault.lock();
 			Default = resposta;
 			mDefault.unlock();
+			readyDefault.store(true);
 		}
 
 		if (readyInput.load())
