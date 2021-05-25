@@ -10,7 +10,7 @@
 
 std::string message = "", resposta;
 std::string playerInput, playerInput_pass;
-std::string Map, Log, Msg, Look, resposta_aux;
+std::string Map = "", Log = "", Msg = "", Look = "";
 //std::string printMap, printLog, printMsg, printDefault;
 char Player_Port[200], receive[2000];
 bool Ready = true;
@@ -134,30 +134,35 @@ int main(int argc, char* argv[])
 			std::cout << "Server disconnected.";
 			break;
 		}
+		else
+			receive[recv_size] = '\0';
 		resposta = receive;
 		//receive[3] = '\0';
-		while (resposta != ";")
+		if (resposta.find("LOG") != std::string::npos)
 		{
-			resposta_aux = resposta.substr(0, resposta.find(';') - 1);
-			if (resposta.find("MAP") != std::string::npos)
-			{
-				Map = resposta_aux.substr(resposta.find('/'), resposta.rfind('/'));
-			}
-			else if (resposta.find("MSG") != std::string::npos)
-			{
-				Msg = resposta_aux.substr(resposta.find('/'), resposta.rfind('/'));
-			}
-			else if (resposta.find("LOG") != std::string::npos)
-			{
-				Log = resposta_aux.substr(resposta.find('/'), resposta.rfind('/'));
-			}
-			else if (resposta.find("LOO") != std::string::npos)
-			{
-				Look = resposta_aux.substr(resposta.find('/'), resposta.rfind('/'));
-			}
-			resposta = resposta.substr(resposta.find(';') + 1, resposta.size());
-
+			Log = resposta.substr(resposta.find('/'), resposta.rfind('/'));
 		}
+		resposta = resposta.substr(resposta.find(';') + 1, resposta.size());
+
+		if (resposta.find("MAP") != std::string::npos)
+		{
+			Map = resposta.substr(resposta.find('/'), resposta.find(';') - resposta.find('/') - 2);
+		}
+		resposta = resposta.substr(resposta.find(';') + 1, resposta.size());
+
+		if (resposta.find("MSG") != std::string::npos)
+		{
+			Msg = resposta.substr(resposta.find('/'), resposta.rfind('/'));
+		}
+		/*
+		resposta = resposta.substr(resposta.find(';') + 1, resposta.size());
+
+		if (resposta.find("LOO") != std::string::npos)
+		{
+			Look = resposta_aux.substr(resposta.find('/'), resposta.rfind('/'));
+		}
+		resposta = resposta.substr(resposta.find(';') + 1, resposta.size());
+		*/
 		/*
 		if (string_equal(receive, "MAP"))
 		{
@@ -192,6 +197,7 @@ int main(int argc, char* argv[])
 			{
 				std::cout << "Digite o nome: ";
 				std::getline(std::cin, param);
+				std::cin.ignore();
 			} while (param.size() > 50);
 			playerInput.replace(playerInput.find("<nome>"), 6, param);
 

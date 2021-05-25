@@ -5,9 +5,9 @@
 #pragma comment(lib,"Ws2_32.lib")
 
 Player* playerList[2];
-bool playerSet[2] = { false };
-bool playerNotInit[2] = { true };
-std::string playerMessage[2];
+bool playerSet[2] = { false, false };
+bool playerNotInit[2] = { true, true };
+std::string playerMessage[2] = { "", "" };
 std::string playerLog = "";
 std::string consolePrint = "";
 
@@ -129,13 +129,14 @@ void MainGame(uint16_t PORT1, uint16_t PORT2)
     std::cout << "this\n";
     while (true)
     {
-        //LOG
-        enviar = playerLog + ';';
         //send(connection1, enviar.c_str(), enviar.size(), 0);
         //send(connection2, enviar.c_str(), enviar.size(), 0);
 
         if (playerSet[0] || playerNotInit[0])
         {
+            //LOG
+            enviar = playerLog + ';';
+
             //MAP
             enviar += "MAP /Player 1: ";
             enviar += playerSet[0] ? '\n' + playerList[0]->getInfo() : "Disconnected.";
@@ -152,16 +153,6 @@ void MainGame(uint16_t PORT1, uint16_t PORT2)
             std::cout << "Sending to player 1...\t";
             send(connection1, enviar.c_str(), enviar.size(), 0);
             std::cout << "Sent.\n";
-
-            recv1 = recv(connection1, receber, 2000, 0);
-            if (recv1 != 0)
-                PlayerMove(0);
-            else 
-            {
-                playerNotInit[0] = false;
-                playerSet[0] = false;
-            }
-            //send(connection1, enviar.c_str(), enviar.size(), 0);
         }
 
         //LOG
@@ -182,17 +173,38 @@ void MainGame(uint16_t PORT1, uint16_t PORT2)
 
             //MSG
             enviar += playerMessage[1];
-            enviar += ';';
             //send(connection2, enviar.c_str(), enviar.size(), 0);
             playerMessage[1] = "";
 
             std::cout << "Sending to player 2...\t";
             send(connection2, enviar.c_str(), enviar.size(), 0);
             std::cout << "Sent.\n";
+        }
 
+        if (playerSet[0] || playerNotInit[0])
+        {
+            recv1 = recv(connection1, receber, 2000, 0);
+            if (recv1 != 0)
+            {
+                receber[recv2] = '\0';
+                PlayerMove(0);
+            }
+            else
+            {
+                playerNotInit[0] = false;
+                playerSet[0] = false;
+            }
+            //send(connection1, enviar.c_str(), enviar.size(), 0);
+        }
+
+        if (playerSet[1] || playerNotInit[1])
+        {
             recv2 = recv(connection2, receber, 2000, 0);
             if (recv2 != 0)
+            {
+                receber[recv2] = '\0';
                 PlayerMove(1);
+            }
             else
             {
                 playerNotInit[1] = false;
@@ -200,6 +212,7 @@ void MainGame(uint16_t PORT1, uint16_t PORT2)
             }
             //send(connection2, enviar.c_str(), enviar.size(), 0);
         }
+        
         if (!(playerSet[0] || playerSet[1]) && !(playerNotInit[0] || playerNotInit[1]))
             break;
         
@@ -230,11 +243,13 @@ void PlayerMove(int player_i)
     Abilities this_power;
 
     //Entrada vazia
+    /*
     if (receber[0] == '\0')
     {
         enviar = "NON";
         return;
     }
+    */
 
     //Apaga seu personagem e sai do jogo
     if (string_equal(receber, "QUIT"))
@@ -454,6 +469,7 @@ void PlayerMove(int player_i)
             consolePrint = "Player " + std::to_string(!player_i) + " not found.";
     }
 
+    /*
     //Recebe informações de um jogador da mesa
     else if (string_equal(receber, "OLHAR"))
     {
@@ -467,6 +483,7 @@ void PlayerMove(int player_i)
         else
             consolePrint = "Player not found.";
     }
+    */
 
     //Ativa o modo imortal ao seu personagem
     else if (string_equal(receber, "GODMO"))
