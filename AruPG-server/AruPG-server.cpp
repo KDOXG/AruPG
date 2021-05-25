@@ -74,10 +74,10 @@ int main(int argc, char* argv[])
     }
     
     closesocket(ServerMain);
-    WSACleanup();
 
     MainGame(PORTS[1], PORTS[2]);
-    
+
+    WSACleanup();
     
     return 0;
 }

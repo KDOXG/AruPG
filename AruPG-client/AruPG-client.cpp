@@ -36,7 +36,9 @@ int main(int argc, char* argv[])
 {
 	// For Application
 	char choice;
-	std::string param;
+	std::string param = "";
+
+	int temp_count = 0;
 
 	// For Client Instance
 	SOCKET Client_GetPort, MainClient;
@@ -111,11 +113,17 @@ int main(int argc, char* argv[])
 
 	//std::thread PlayerConnection(PlayerBehavior, Main_PORT);
 
-	if (connect(MainClient, (struct sockaddr*)&serverInfo, sizeof(serverInfo)) < 0)
+	while (connect(MainClient, (struct sockaddr*)&serverInfo, sizeof(serverInfo)) < 0)
 	{
-		puts("connect error");
-		return 1;
+		temp_count++;
+		if (temp_count == 10000)
+		{
+			puts("connect error");
+			return 1;
+		}
 	}
+
+	puts("Connected");
 
 	while (Ready)
 	{
