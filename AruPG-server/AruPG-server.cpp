@@ -8,8 +8,8 @@ Player* playerList[2];
 bool playerSet[2] = { false };
 bool playerNotInit[2] = { true };
 std::string playerMessage[2];
-std::string playerLog;
-std::string consolePrint;
+std::string playerLog = "";
+std::string consolePrint = "";
 
 Map mapa;
 
@@ -70,7 +70,7 @@ int main(int argc, char* argv[])
 
         message = std::to_string(PORTS[count]);
         
-        send(ConnectionWithClient, message.c_str(), message.size(), 0);
+        while (send(ConnectionWithClient, message.c_str(), message.size(), 0) < 0);
     }
     
     closesocket(ServerMain);
@@ -134,7 +134,7 @@ void MainGame(uint16_t PORT1, uint16_t PORT2)
         //send(connection1, enviar.c_str(), enviar.size(), 0);
         //send(connection2, enviar.c_str(), enviar.size(), 0);
 
-        if (playerSet[0])
+        if (playerSet[0] || playerNotInit[0])
         {
             //MAP
             enviar += "MAP /Player 1: ";
@@ -149,13 +149,18 @@ void MainGame(uint16_t PORT1, uint16_t PORT2)
             //send(connection1, enviar.c_str(), enviar.size(), 0);
             playerMessage[0] = "";
 
+            std::cout << "Sending to player 1...\t";
             send(connection1, enviar.c_str(), enviar.size(), 0);
+            std::cout << "Sent.\n";
 
             recv1 = recv(connection1, receber, 2000, 0);
             if (recv1 != 0)
                 PlayerMove(0);
-            else
+            else 
+            {
+                playerNotInit[0] = false;
                 playerSet[0] = false;
+            }
             //send(connection1, enviar.c_str(), enviar.size(), 0);
         }
 
@@ -163,7 +168,7 @@ void MainGame(uint16_t PORT1, uint16_t PORT2)
         enviar = playerLog + ';';
         playerLog = "";
 
-        if (playerSet[1])
+        if (playerSet[1] || playerNotInit[1])
         {
             //MAP
 
@@ -181,13 +186,18 @@ void MainGame(uint16_t PORT1, uint16_t PORT2)
             //send(connection2, enviar.c_str(), enviar.size(), 0);
             playerMessage[1] = "";
 
+            std::cout << "Sending to player 2...\t";
             send(connection2, enviar.c_str(), enviar.size(), 0);
+            std::cout << "Sent.\n";
 
             recv2 = recv(connection2, receber, 2000, 0);
             if (recv2 != 0)
                 PlayerMove(1);
             else
+            {
+                playerNotInit[1] = false;
                 playerSet[1] = false;
+            }
             //send(connection2, enviar.c_str(), enviar.size(), 0);
         }
         if (!(playerSet[0] || playerSet[1]) && !(playerNotInit[0] || playerNotInit[1]))
@@ -247,7 +257,7 @@ void PlayerMove(int player_i)
 
     recebido = receber;
     receber[5] = '\0';
-
+    std::cout << recebido + '\n';
     //Inicializa o personagem com nome, hp e defesa
     if (string_equal(receber, "START"))
     {

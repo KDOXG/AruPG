@@ -127,168 +127,6 @@ int main(int argc, char* argv[])
 
 	while (Ready)
 	{
-		std::cout << "0: Iniciar\n1: Criar magia\n2: Atacar alvo\n3: Mover personagem\n4: Falar com jogador\n";
-		std::cout << "5: Olhar outro jogador\n6: Ativar God Mode\n7: Sair do jogo\n";
-		std::cout << "8: Mostrar os personagens\n9: Mostrar mensagem recebida\na: Mostrar o log\nDigite : ";
-		std::cin >> choice;
-		switch (choice)
-		{
-		case '0':	//Iniciar o jogo, criar personagem
-			playerInput = "START \"<nome>\" <hp> <defesa>";
-			do
-			{
-				std::cout << "Digite o nome: ";
-				std::getline(std::cin, param);
-			} while (param.size() > 50);
-			playerInput.replace(playerInput.find("<nome>"), 6, param);
-
-			do
-			{
-				std::cout << "Digite o HP: ";
-				std::getline(std::cin, param);
-			} while (!isNumber(param) || isNegative(param) || std::stoul(param) >= UINT16_MAX);
-			playerInput.replace(playerInput.find("<hp>"), 4, param);
-
-			do
-			{
-				std::cout << "Digite a defesa: ";
-				std::getline(std::cin, param);
-			} while (!isNumber(param) || isNegative(param) || std::stoul(param) >= UINT16_MAX);
-			playerInput.replace(playerInput.find("<defesa>"), 8, param);
-
-		break;
-
-		case '1':	//Criar uma magia para o personagem
-			playerInput = "MAGIA \"<nome>\" <posicao> <dano> <tipo>";
-
-			do
-			{
-				std::cout << "Digite o nome: ";
-				std::getline(std::cin, param);
-			} while (param.size() > 50);
-			playerInput.replace(playerInput.find("<nome>"), 6, param);
-
-			do
-			{
-				std::cout << "Digite a posição: ";
-				std::getline(std::cin, param);
-			} while (!isNumber(param) || std::stoi(param) == 0 || std::stoi(param) > 5);
-			playerInput.replace(playerInput.find("<posicao>"), 9, param);
-
-			do
-			{
-				std::cout << "Digite o dano: ";
-				std::getline(std::cin, param);
-			} while ((!isNumber(param) && !isNegative(param)) || std::stoi(param) >= INT16_MAX || std::stoi(param) <= INT16_MIN);
-			playerInput.replace(playerInput.find("<dano>"), 6, param);
-
-			do
-			{
-				std::cout << "Digite o tipo: ";
-				std::getline(std::cin, param);
-			} while (!isNumber(param) || std::stoi(param) < 0 || std::stoul(param) > 1);
-			playerInput.replace(playerInput.find("<tipo>"), 6, param);
-
-		break;
-
-		case '2':	//Atacar algum alvo da mesa
-			playerInput = "ATACA \"<nome_do_alvo>\" <ataque> <coordenada_x> <coordenada_y>";
-
-			do
-			{
-				std::cout << "Digite o nome: ";
-				std::getline(std::cin, param);
-			} while (param.size() > 50);
-			playerInput.replace(playerInput.find("<nome_do_alvo>"), 14, param);
-
-			do
-			{
-				std::cout << "Digite o índice do ataque: ";
-				std::getline(std::cin, param);
-			} while (!isNumber(param) || std::stoi(param) == 0 || std::stoi(param) > 5);
-			playerInput.replace(playerInput.find("<ataque>"), 8, param);
-
-			std::cout << "Digite as coordenadas da posição do alvo\n";
-			do
-			{
-				std::cout << "x: ";
-				std::getline(std::cin, param);
-			} while (!isNumber(param) || std::stoi(param) >= 100);
-			playerInput.replace(playerInput.find("<coordenada_x>"), 14, param);
-			do
-			{
-				std::cout << "y: ";
-				std::getline(std::cin, param);
-			} while (!isNumber(param) || std::stoi(param) >= 100);
-			playerInput.replace(playerInput.find("<coordenada_y>"), 14, param);
-
-		break;
-
-		case '3':	//Mover o personagem para uma posição
-			playerInput = "MOVER <coordenada_x> <coordenada_y>";
-
-			std::cout << "Digite as coordenadas da posição do alvo\n";
-			do
-			{
-				std::cout << "x: ";
-				std::getline(std::cin, param);
-			} while (!isNumber(param) || std::stoi(param) >= 100);
-			playerInput.replace(playerInput.find("<coordenada_x>"), 14, param);
-			do
-			{
-				std::cout << "y: ";
-				std::getline(std::cin, param);
-			} while (!isNumber(param) || std::stoi(param) >= 100);
-			playerInput.replace(playerInput.find("<coordenada_y>"), 14, param);
-
-		break;
-
-		case '4':	//Falar com outro jogador
-
-			playerInput = "FALAR /<mensagem>/";
-
-			do
-			{
-				std::cout << "Digite sua mensagem: ";
-				std::getline(std::cin, param);
-			} while (param.size() > 500);
-			playerInput.replace(playerInput.find("<mensagem>"), 10, param);
-
-		break;
-
-		case '5':	//Verificar os status de outro personagem
-			playerInput = "OLHAR";
-
-		break;
-
-		case '6':	//Ativar God Mode
-			playerInput = "GODMO";
-
-		break;
-
-		case '7':	//Sair do jogo
-			playerInput = "QUIT";
-
-			Ready = false;
-		break;
-
-		case '8':	//Imprimir informações dos personagens
-			std::cout << Map << '\n';
-		break;
-
-		case '9':	//Imprimir uma mensagem recebida
-			std::cout << Msg << '\n';
-		break;
-
-		case 'a':	//Imprimir o Log
-			std::cout << Log << '\n';
-		break;
-
-		default:
-			continue;
-		break;
-		}
-
 		std::cout << "Wait...\n";
 		recv_size = recv(MainClient, receive, 2000, 0);
 		if (recv_size == 0)
@@ -342,6 +180,168 @@ int main(int argc, char* argv[])
 			//does nothing
 		}
 		*/
+		std::cout << "0: Iniciar\n1: Criar magia\n2: Atacar alvo\n3: Mover personagem\n4: Falar com jogador\n";
+		std::cout << "5: Olhar outro jogador\n6: Ativar God Mode\n7: Sair do jogo\n";
+		std::cout << "8: Mostrar os personagens\n9: Mostrar mensagem recebida\na: Mostrar o log\nDigite : ";
+		std::cin >> choice;
+		switch (choice)
+		{
+		case '0':	//Iniciar o jogo, criar personagem
+			playerInput = "START \"<nome>\" <hp> <defesa>";
+			do
+			{
+				std::cout << "Digite o nome: ";
+				std::getline(std::cin, param);
+			} while (param.size() > 50);
+			playerInput.replace(playerInput.find("<nome>"), 6, param);
+
+			do
+			{
+				std::cout << "Digite o HP: ";
+				std::getline(std::cin, param);
+			} while (!isNumber(param) || isNegative(param) || std::stoul(param) >= UINT16_MAX);
+			playerInput.replace(playerInput.find("<hp>"), 4, param);
+
+			do
+			{
+				std::cout << "Digite a defesa: ";
+				std::getline(std::cin, param);
+			} while (!isNumber(param) || isNegative(param) || std::stoul(param) >= UINT16_MAX);
+			playerInput.replace(playerInput.find("<defesa>"), 8, param);
+
+			break;
+
+		case '1':	//Criar uma magia para o personagem
+			playerInput = "MAGIA \"<nome>\" <posicao> <dano> <tipo>";
+
+			do
+			{
+				std::cout << "Digite o nome: ";
+				std::getline(std::cin, param);
+			} while (param.size() > 50);
+			playerInput.replace(playerInput.find("<nome>"), 6, param);
+
+			do
+			{
+				std::cout << "Digite a posição: ";
+				std::getline(std::cin, param);
+			} while (!isNumber(param) || std::stoi(param) == 0 || std::stoi(param) > 5);
+			playerInput.replace(playerInput.find("<posicao>"), 9, param);
+
+			do
+			{
+				std::cout << "Digite o dano: ";
+				std::getline(std::cin, param);
+			} while ((!isNumber(param) && !isNegative(param)) || std::stoi(param) >= INT16_MAX || std::stoi(param) <= INT16_MIN);
+			playerInput.replace(playerInput.find("<dano>"), 6, param);
+
+			do
+			{
+				std::cout << "Digite o tipo: ";
+				std::getline(std::cin, param);
+			} while (!isNumber(param) || std::stoi(param) < 0 || std::stoul(param) > 1);
+			playerInput.replace(playerInput.find("<tipo>"), 6, param);
+
+			break;
+
+		case '2':	//Atacar algum alvo da mesa
+			playerInput = "ATACA \"<nome_do_alvo>\" <ataque> <coordenada_x> <coordenada_y>";
+
+			do
+			{
+				std::cout << "Digite o nome: ";
+				std::getline(std::cin, param);
+			} while (param.size() > 50);
+			playerInput.replace(playerInput.find("<nome_do_alvo>"), 14, param);
+
+			do
+			{
+				std::cout << "Digite o índice do ataque: ";
+				std::getline(std::cin, param);
+			} while (!isNumber(param) || std::stoi(param) == 0 || std::stoi(param) > 5);
+			playerInput.replace(playerInput.find("<ataque>"), 8, param);
+
+			std::cout << "Digite as coordenadas da posição do alvo\n";
+			do
+			{
+				std::cout << "x: ";
+				std::getline(std::cin, param);
+			} while (!isNumber(param) || std::stoi(param) >= 100);
+			playerInput.replace(playerInput.find("<coordenada_x>"), 14, param);
+			do
+			{
+				std::cout << "y: ";
+				std::getline(std::cin, param);
+			} while (!isNumber(param) || std::stoi(param) >= 100);
+			playerInput.replace(playerInput.find("<coordenada_y>"), 14, param);
+
+			break;
+
+		case '3':	//Mover o personagem para uma posição
+			playerInput = "MOVER <coordenada_x> <coordenada_y>";
+
+			std::cout << "Digite as coordenadas da posição do alvo\n";
+			do
+			{
+				std::cout << "x: ";
+				std::getline(std::cin, param);
+			} while (!isNumber(param) || std::stoi(param) >= 100);
+			playerInput.replace(playerInput.find("<coordenada_x>"), 14, param);
+			do
+			{
+				std::cout << "y: ";
+				std::getline(std::cin, param);
+			} while (!isNumber(param) || std::stoi(param) >= 100);
+			playerInput.replace(playerInput.find("<coordenada_y>"), 14, param);
+
+			break;
+
+		case '4':	//Falar com outro jogador
+
+			playerInput = "FALAR /<mensagem>/";
+
+			do
+			{
+				std::cout << "Digite sua mensagem: ";
+				std::getline(std::cin, param);
+			} while (param.size() > 500);
+			playerInput.replace(playerInput.find("<mensagem>"), 10, param);
+
+			break;
+
+		case '5':	//Verificar os status de outro personagem
+			playerInput = "OLHAR";
+
+			break;
+
+		case '6':	//Ativar God Mode
+			playerInput = "GODMO";
+
+			break;
+
+		case '7':	//Sair do jogo
+			playerInput = "QUIT";
+
+			Ready = false;
+			break;
+
+		case '8':	//Imprimir informações dos personagens
+			std::cout << Map << '\n';
+			break;
+
+		case '9':	//Imprimir uma mensagem recebida
+			std::cout << Msg << '\n';
+			break;
+
+		case 'a':	//Imprimir o Log
+			std::cout << Log << '\n';
+			break;
+
+		default:
+			continue;
+			break;
+		}
+
 		send(MainClient, playerInput.c_str(), playerInput.size(), 0);
 		if (playerInput == "QUIT")
 			break;
