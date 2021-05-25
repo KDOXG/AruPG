@@ -10,7 +10,7 @@
 
 std::string message = "", resposta;
 std::string playerInput, playerInput_pass;
-std::string Map, Log, Msg, Look, Default;
+std::string Map, Log, Msg, Look, resposta_aux;
 //std::string printMap, printLog, printMsg, printDefault;
 char Player_Port[200], receive[2000];
 bool Ready = true;
@@ -286,11 +286,33 @@ int main(int argc, char* argv[])
 		if (recv_size == 0)
 		{
 			std::cout << "Server disconnected.";
-			return 0;
+			break;
 		}
 		resposta = receive;
-		receive[3] = '\0';
+		//receive[3] = '\0';
+		while (resposta != ";")
+		{
+			resposta_aux = resposta.substr(0, resposta.find(';') - 1);
+			if (resposta.find("MAP") != std::string::npos)
+			{
+				Map = resposta_aux.substr(resposta.find('/'), resposta.rfind('/'));
+			}
+			else if (resposta.find("MSG") != std::string::npos)
+			{
+				Msg = resposta_aux.substr(resposta.find('/'), resposta.rfind('/'));
+			}
+			else if (resposta.find("LOG") != std::string::npos)
+			{
+				Log = resposta_aux.substr(resposta.find('/'), resposta.rfind('/'));
+			}
+			else if (resposta.find("LOO") != std::string::npos)
+			{
+				Look = resposta_aux.substr(resposta.find('/'), resposta.rfind('/'));
+			}
+			resposta = resposta.substr(resposta.find(';') + 1, resposta.size());
 
+		}
+		/*
 		if (string_equal(receive, "MAP"))
 		{
 			Map = resposta.substr(resposta.find('/'), resposta.rfind('/')).c_str();
@@ -311,7 +333,7 @@ int main(int argc, char* argv[])
 		{
 			//does nothing
 		}
-
+		*/
 		send(MainClient, playerInput.c_str(), playerInput.size(), 0);
 		if (playerInput == "QUIT")
 			break;

@@ -130,24 +130,26 @@ void MainGame(uint16_t PORT1, uint16_t PORT2)
     while (true)
     {
         //LOG
-        enviar = playerLog;
-        send(connection1, enviar.c_str(), enviar.size(), 0);
-        send(connection2, enviar.c_str(), enviar.size(), 0);
-        playerLog = "";
+        enviar = playerLog + ';';
+        //send(connection1, enviar.c_str(), enviar.size(), 0);
+        //send(connection2, enviar.c_str(), enviar.size(), 0);
 
         if (playerSet[0])
         {
             //MAP
-            enviar = "MAP /Player 1: ";
+            enviar += "MAP /Player 1: ";
             enviar += playerSet[0] ? '\n' + playerList[0]->getInfo() : "Disconnected.";
             enviar += "\nPlayer 2: ";
             enviar += playerSet[1] ? '\n' + playerList[1]->getInfo() + '/' : "Disconnected./";
-            send(connection1, enviar.c_str(), enviar.size(), 0);
+            enviar += ';';
+            //send(connection1, enviar.c_str(), enviar.size(), 0);
 
             //MSG
-            enviar = playerMessage[0];
-            send(connection1, enviar.c_str(), enviar.size(), 0);
+            enviar += playerMessage[0];
+            //send(connection1, enviar.c_str(), enviar.size(), 0);
             playerMessage[0] = "";
+
+            send(connection1, enviar.c_str(), enviar.size(), 0);
 
             recv1 = recv(connection1, receber, 2000, 0);
             if (recv1 != 0)
@@ -157,16 +159,29 @@ void MainGame(uint16_t PORT1, uint16_t PORT2)
             //send(connection1, enviar.c_str(), enviar.size(), 0);
         }
 
+        //LOG
+        enviar = playerLog + ';';
+        playerLog = "";
+
         if (playerSet[1])
         {
             //MAP
-            enviar = "MAP";
-            send(connection2, enviar.c_str(), enviar.size(), 0);
+
+            enviar += "MAP /Player 1: ";
+            enviar += playerSet[0] ? '\n' + playerList[0]->getInfo() : "Disconnected.";
+            enviar += "\nPlayer 2: ";
+            enviar += playerSet[1] ? '\n' + playerList[1]->getInfo() + '/' : "Disconnected./";
+            enviar += ';';
+
+            //send(connection2, enviar.c_str(), enviar.size(), 0);
 
             //MSG
-            enviar = playerMessage[1];
-            send(connection2, enviar.c_str(), enviar.size(), 0);
+            enviar += playerMessage[1];
+            enviar += ';';
+            //send(connection2, enviar.c_str(), enviar.size(), 0);
             playerMessage[1] = "";
+
+            send(connection2, enviar.c_str(), enviar.size(), 0);
 
             recv2 = recv(connection2, receber, 2000, 0);
             if (recv2 != 0)
