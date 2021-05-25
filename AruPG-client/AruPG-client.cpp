@@ -154,40 +154,10 @@ int main(int argc, char* argv[])
 		{
 			Msg = resposta.substr(resposta.find('/'), resposta.rfind('/'));
 		}
-		/*
-		resposta = resposta.substr(resposta.find(';') + 1, resposta.size());
 
-		if (resposta.find("LOO") != std::string::npos)
-		{
-			Look = resposta_aux.substr(resposta.find('/'), resposta.rfind('/'));
-		}
-		resposta = resposta.substr(resposta.find(';') + 1, resposta.size());
-		*/
-		/*
-		if (string_equal(receive, "MAP"))
-		{
-			Map = resposta.substr(resposta.find('/'), resposta.rfind('/')).c_str();
-		}
-		else if (string_equal(receive, "MSG"))
-		{
-			Msg = resposta.substr(resposta.find('/'), resposta.rfind('/')).c_str();
-		}
-		else if (string_equal(receive, "LOG"))
-		{
-			Log = resposta.substr(resposta.find('/'), resposta.rfind('/')).c_str();
-		}
-		else if (string_equal(receive, "LOO"))
-		{
-			Look = resposta.substr(resposta.find('/'), resposta.rfind('/')).c_str();
-		}
-		else// if (string_equal(receive, "NON"))
-		{
-			//does nothing
-		}
-		*/
 		std::cout << "0: Iniciar\n1: Criar magia\n2: Atacar alvo\n3: Mover personagem\n4: Falar com jogador\n";
-		std::cout << "5: Olhar outro jogador\n6: Ativar God Mode\n7: Sair do jogo\n";
-		std::cout << "8: Mostrar os personagens\n9: Mostrar mensagem recebida\na: Mostrar o log\nDigite : ";
+		std::cout << "5: Ativar God Mode\n6: Sair do jogo\n7: Mostrar os personagens\n";
+		std::cout << "8: Mostrar mensagem recebida\n9: Mostrar o log\nDigite : ";
 		std::cin >> choice;
 		switch (choice)
 		{
@@ -315,31 +285,26 @@ int main(int argc, char* argv[])
 
 			break;
 
-		case '5':	//Verificar os status de outro personagem
-			playerInput = "OLHAR";
-
-			break;
-
-		case '6':	//Ativar God Mode
+		case '5':	//Ativar God Mode
 			playerInput = "GODMO";
 
 			break;
 
-		case '7':	//Sair do jogo
+		case '6':	//Sair do jogo
 			playerInput = "QUIT";
 
 			Ready = false;
 			break;
 
-		case '8':	//Imprimir informações dos personagens
+		case '7':	//Imprimir informações dos personagens
 			std::cout << Map << '\n';
 			break;
 
-		case '9':	//Imprimir uma mensagem recebida
+		case '8':	//Imprimir uma mensagem recebida
 			std::cout << Msg << '\n';
 			break;
 
-		case 'a':	//Imprimir o Log
+		case '9':	//Imprimir o Log
 			std::cout << Log << '\n';
 			break;
 
